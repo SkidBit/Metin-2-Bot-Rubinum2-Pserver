@@ -8,9 +8,9 @@ How to build:
 3. Set Compiler options etc. to be the same as in the "Samples" subproject
 4. Add files from the repo to the project
 5. Build
-
-(6) Inject via dll injector
-(7) Press F1 to start/pause the bot (you will see in the console if the bot is running)
+6. Inject via dll injector
+7. Press F1 to start/pause the bot (you will see in the console if the bot is running)
+8. To complete shut down and remove the bot, press INSERT
 
 How it works:
 When started the bot gets the player position and sets that position as an anchor for all the
