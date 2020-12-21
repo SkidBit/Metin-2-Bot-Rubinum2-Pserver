@@ -7,7 +7,7 @@ How to build:
 2. Create subproject
 3. Set Compiler options etc. to be the same as in the "Samples" subproject (very important, otherwise it won't build)
 4. Add files from the repo to the project
-5. Build
+5. Build as Release on x86
 6. Inject via dll injector
 7. Press F1 to start/pause the bot (you will see in the console if the bot is running)
 8. To complete shut down and remove the bot, press INSERT
