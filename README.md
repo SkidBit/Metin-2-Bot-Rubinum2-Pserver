@@ -5,7 +5,7 @@ Completely inmemory farm bot for the MT2 Rubinum private server 2020
 How to build:
 1. Get BlackBone https://github.com/DarthTon/Blackbone
 2. Create subproject
-3. Set Compiler options etc. to be the same as in the "Samples" subproject
+3. Set Compiler options etc. to be the same as in the "Samples" subproject (very important, otherwise it won't build)
 4. Add files from the repo to the project
 5. Build
 6. Inject via dll injector
