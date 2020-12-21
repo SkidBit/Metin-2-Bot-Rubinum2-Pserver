@@ -34,7 +34,8 @@ are mad that others sell bots made with their knowledge. KNOWLEDGE SHOULD BE A F
 Oh btw, if you use a VPN and VM to bypass the "2 window farm restricion", paste this in your .vmx file of your vmware image to 
 disable the Rubinum VM detection (?). For me the game wouldn't start without it.
 
-**hypervisor.cpuid.v0 = "FALSE"
+```
+hypervisor.cpuid.v0 = "FALSE"
 board-id.reflectHost = "TRUE"
 hw.model.reflectHost = "TRUE"
 serialNumber.reflectHost = "TRUE"
@@ -53,7 +54,8 @@ monitor_control.disable_btinout = "TRUE"
 monitor_control.disable_btmemspace = "TRUE"
 monitor_control.disable_btpriv = "TRUE"
 monitor_control.disable_btseg = "TRUE"
-monitor_control.restrict_backdoor = "TRUE"**
+monitor_control.restrict_backdoor = "TRUE"
+```
 
 I took that from this repo: https://github.com/hzqst/VmwareHardenedLoader.
 
