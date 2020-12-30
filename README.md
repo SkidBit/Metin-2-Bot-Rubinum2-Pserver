@@ -2,6 +2,9 @@
 
 Completely inmemory farm bot for the MT2 Rubinum private server 2020
 
+First of all: if you get banned by using this bot it's your own fault. Currently there seems to be no automatic bot detection but if someone
+sees you botting you can get banned. And if the game updates and they put in an anticheat/antibot system you can also get banned. So take care.
+
 How to build:
 1. Download the sources
 2. Create an empty C++ project (Visual Studio 2019 is what I use)
