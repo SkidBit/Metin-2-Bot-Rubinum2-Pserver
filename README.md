@@ -10,7 +10,7 @@ How to build:
 5. Go into project settings -> general settings, set configuration-type to .dll
 5. Build as Release on x86
 2. Inject via dll injector
-3. Press F1 to start/pause the bot (you will see in the console if the bot is running)
+3. Press F1 to start/pause the bot (the bot will take a moment to get started)
 4. To complete shut down and remove the bot, press INSERT
 
 If there is an error regarding char* or LPCWSTR change the encoding in the project settings or take away the "L" from the
