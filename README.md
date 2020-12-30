@@ -7,7 +7,7 @@ How to build:
 2. Create an empty C++ project
 3. In the project Explorer -> Headerfiles -> Add -> Add existing files -> select the .h files in the source folder of the bot
 4. In the project Explorer -> Sourcefiles -> Add -> Add existing files -> select the .cpp files in the source folder of the bot
-5. Go into project settins -> general settings, set configuration-type to .dll
+5. Go into project settings -> general settings, set configuration-type to .dll
 5. Build as Release on x86
 2. Inject via dll injector
 3. Press F1 to start/pause the bot (you will see in the console if the bot is running)
