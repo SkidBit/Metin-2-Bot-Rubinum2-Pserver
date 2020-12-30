@@ -3,10 +3,18 @@
 Completely inmemory farm bot for the MT2 Rubinum private server 2020
 
 How to build:
-1. Build as Release on x86
+1. Download the sources
+2. Create an empty C++ project
+3. In the project Explorer -> Headerfiles -> Add -> Add existing files -> select the .h files in the source folder of the bot
+4. In the project Explorer -> Sourcefiles -> Add -> Add existing files -> select the .cpp files in the source folder of the bot
+5. Go into project settins -> general settings, set configuration-type to .dll
+5. Build as Release on x86
 2. Inject via dll injector
 3. Press F1 to start/pause the bot (you will see in the console if the bot is running)
 4. To complete shut down and remove the bot, press INSERT
+
+If there is an error regarding char* or LPCWSTR change the encoding in the project settings or take away the "L" from the
+console title in the console.h file.
 
 How it works:
 When started the bot gets the player position and sets that position as an anchor for all the
