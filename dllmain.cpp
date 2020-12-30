@@ -99,7 +99,6 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 			if (firstLoop) {
 				cout << "FirstLoop setup is run..." << endl;
-				Sleep(5000);
 				// enable wallhack
 				enableWallhack();
 				cout << "WH enabled" << endl;
