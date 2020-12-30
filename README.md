@@ -31,7 +31,7 @@ I know that the coding is sh** but this project still was a great learning exper
 I let two windows run with the bot for 24 hours and it worked perfectly, so I guess there are no memleaks or similar.
 Working as of today, December 2020.
 
-I probably won't update the offsets after major updates, so use it as long as it works.
+I probably won't update the offsets after major updates, so use it as long as it works (and don't update the client if you don't have to!).
 
 Big thanks to Rake and all the others at GuidedHacking for their guides and the DLL template.
 
