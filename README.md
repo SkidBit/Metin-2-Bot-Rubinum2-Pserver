@@ -10,11 +10,12 @@ How to build:
 2. Create an empty C++ project (Visual Studio 2019 is what I use)
 3. In the project Explorer -> Headerfiles -> Add -> Add existing files -> select the .h files in the source folder of the bot
 4. In the project Explorer -> Sourcefiles -> Add -> Add existing files -> select the .cpp files in the source folder of the bot
-5. Go into project settings -> general settings, set configuration-type to .dll
-5. Build as Release on x86
-2. Inject via dll injector
-3. Press F1 to start/pause the bot (the bot will take a moment to get started)
-4. To complete shut down and remove the bot, press INSERT
+5. Set Build from Debug to Release
+6. Go into project settings -> general settings, set configuration-type to .dll
+7. Build as Release on x86
+8. Inject via dll injector
+9. Press F1 to start/pause the bot (the bot will take a moment to get started)
+10. To complete shut down and remove the bot, press INSERT
 
 If there is an error regarding char* or LPCWSTR change the encoding in the project settings or take away the "L" from the
 console title in the console.h file.
