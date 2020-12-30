@@ -3,9 +3,6 @@
 
 using namespace std;
 #define show_console 1 //1 = show console ~ 0 = don't show console
-#define CHECK_BAD_PTR(x) if(IsBadReadPtr(this,sizeof(x))) return nullptr
-#define CHECK_BAD(x) if(IsBadReadPtr(this, sizeof(x))) return
-#define CHECK_BAD_NUM(x) if(IsBadReadPtr(this, sizeof(x))) return 0
 
 uintptr_t baseAdressMainMod;
 
@@ -61,9 +58,9 @@ int metinIdEnd = 8112;
 bool botRunning = false;
 bool firstLoop = true;
 
-std::vector<float> getPlayerPos();
-std::vector<float> getMobPos(uintptr_t offsetInMoblist);
-uintptr_t getOffsetOfClosestMetinStone(int scansize, std::vector<float> anchorPosition);
+vector<float> getPlayerPos();
+vector<float> getMobPos(uintptr_t offsetInMoblist);
+uintptr_t getOffsetOfClosestMetinStone(int scansize, vector<float> anchorPosition);
 int getMobUid(uintptr_t offsetInMoblist);
 void playerAttackMobWithUid(uintptr_t offsetInMobList);
 void enableWallhack();
@@ -85,7 +82,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 	// pickupCloseFunc(*(void**)0x020F8528);
 	// useItemFunc(*(void**)0x20F8560, 0x101);
 
-	std::vector<float> anchorPosition;
+	vector<float> anchorPosition;
 	uintptr_t offsetClosestStone;
 	std::chrono::steady_clock::time_point timerStart;
 	std::chrono::steady_clock::time_point timerRound;
@@ -99,6 +96,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 			if (firstLoop) {
 				cout << "FirstLoop setup is run..." << endl;
+				Sleep(5000);
 				// enable wallhack
 				enableWallhack();
 				cout << "WH enabled" << endl;
@@ -193,14 +191,14 @@ bool isPlayerAttackingMob() {
 	return *mobUidAddress != 0;
 }
 
-uintptr_t getOffsetOfClosestMetinStone(int scansize, std::vector<float> anchorPosition) {
+uintptr_t getOffsetOfClosestMetinStone(int scansize, vector<float> anchorPosition) {
 	cout << "Searching for metin stones now..." << endl;
 	uintptr_t offsetOfClosestStone = 0x0;
 	float distanceToClosestStone = INFINITY;
 
 	int tempMobId;
 	int * tempMobIdAddress;
-	std::vector<float> tempMobPos;
+	vector<float> tempMobPos;
 	float tempDistanceToClosestStone;
 
 
@@ -220,11 +218,11 @@ uintptr_t getOffsetOfClosestMetinStone(int scansize, std::vector<float> anchorPo
 
 		// check if mob is metin stone
 		if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd) {
-			cout << "Stone found, mobID: " << std::dec << tempMobId << endl;
+			cout << "Stone found, mobID: " << dec << tempMobId << endl;
 			tempMobPos = getMobPos(currentOffsetToEntity);
 			//calculate distance to anchor position
 			tempDistanceToClosestStone = sqrt(pow(anchorPosition.at(0) - tempMobPos.at(0), 2) + pow(anchorPosition.at(1) - tempMobPos.at(1), 2));
-			cout << "Distance to stone: " << std::dec << tempDistanceToClosestStone << endl;
+			cout << "Distance to stone: " << dec << tempDistanceToClosestStone << endl;
 			if (tempDistanceToClosestStone < distanceToClosestStone) {
 				distanceToClosestStone = tempDistanceToClosestStone;
 				offsetOfClosestStone = currentOffsetToEntity;
@@ -238,55 +236,76 @@ uintptr_t getOffsetOfClosestMetinStone(int scansize, std::vector<float> anchorPo
 
 void enableWallhack() {
 	BYTE* wallHackAddress = (BYTE*)findDMAAddy(baseAdressMainMod + offsetWallHackBase, { offsetWallHackOne, offsetWallHackTwo });
-	*wallHackAddress = 0x1;
+	if (!IsBadReadPtr(wallHackAddress)) {
+		*wallHackAddress = 0x1;
+	}
+
 }
 
 void disableWallhack() {
 	BYTE* wallHackAddress = (BYTE*)findDMAAddy(baseAdressMainMod + offsetWallHackBase, { offsetWallHackOne, offsetWallHackTwo });
-	*wallHackAddress = 0x0;
+	if (!IsBadReadPtr(wallHackAddress)) {
+		*wallHackAddress = 0x0;
+	}
 }
 
 void playerAttackMobWithUid(uintptr_t offsetInMobList) {
 
 	// make mob visible
 	BYTE* isVisibleAddress = (BYTE*)findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMobList, offsetToMobIsVisible });
-	*isVisibleAddress = 0x1;
-
+	if (!IsBadReadPtr(isVisibleAddress)) {
+		*isVisibleAddress = 0x1;
+	}
+	
 	int mobUid = getMobUid(offsetInMobList);
 
 	// attack mob
 	int* attackMobAddress = (int*)findDMAAddy(baseAdressMainMod + offsetToPlayerControlObject, { offsetToAttackUID });
-	*attackMobAddress = mobUid;
+	if (!IsBadReadPtr(attackMobAddress)) {
+		*attackMobAddress = mobUid;
+	}
 }
 
 int getMobUid(uintptr_t offsetInMoblist) {
 	int* mobUidAddress = (int*)findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobUniqueId });
 
-	return *mobUidAddress;
+	if (!IsBadReadPtr(mobUidAddress)) {
+		return *mobUidAddress;
+	}
+
+	return 0;
 }
 
-std::vector<float> getMobPos(uintptr_t offsetInMoblist) {
-	std::vector<float> mobPos;
+vector<float> getMobPos(uintptr_t offsetInMoblist) {
+	vector<float> mobPos;
 	float* xPosAddress;
 	float* yPosAddress;
 	float* zPosAddress;
+
+	
 
 	xPosAddress = (float*)findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobXPos });
 	yPosAddress = (float*)findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobYPos });
 	zPosAddress = (float*)findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobZPos });
 
 
-	//invert yPos since its stored as negative value
+	if (!IsBadReadPtr(xPosAddress) && !IsBadReadPtr(yPosAddress) && !IsBadReadPtr(zPosAddress)) {
 
-	mobPos.push_back(*xPosAddress);
-	mobPos.push_back(*yPosAddress * -1);
-	mobPos.push_back(*zPosAddress);
+		mobPos.push_back(*xPosAddress);
+		mobPos.push_back(*yPosAddress * -1);
+		mobPos.push_back(*zPosAddress);
+	}
+	else {
+		mobPos.push_back(0);
+		mobPos.push_back(0);
+		mobPos.push_back(0);
+	}
 
 	return mobPos;
 }
 
-std::vector<float> getPlayerPos() {
-	std::vector<float> playerPos;
+vector<float> getPlayerPos() {
+	vector<float> playerPos;
 	float* xPosAddress;
 	float* yPosAddress;
 	float* zPosAddress;
@@ -296,20 +315,30 @@ std::vector<float> getPlayerPos() {
 	zPosAddress = (float*)findDMAAddy(baseAdressMainMod + offsetToPlayerBase, { offsetToPlayerOne,  offsetToPlayerZPos });
 
 
-	//invert yPos since its stored as negative value
+	if (!IsBadReadPtr(xPosAddress) && !IsBadReadPtr(yPosAddress) && !IsBadReadPtr(zPosAddress)) {
 
-	playerPos.push_back(*xPosAddress);
-	playerPos.push_back(*yPosAddress * -1);
-	playerPos.push_back(*zPosAddress);
+		playerPos.push_back(*xPosAddress);
+		playerPos.push_back(*yPosAddress * -1);
+		playerPos.push_back(*zPosAddress);
+	}
+
+	playerPos.push_back(0);
+	playerPos.push_back(0);
+	playerPos.push_back(0);
 
 	return playerPos;
 }
 
 void resetPlayerAtatck() {
 
+	
+
 	int* playerAttackAddress = (int*)findDMAAddy(baseAdressMainMod + offsetToPlayerControlObject, { offsetToAttackUID });
 
-	*playerAttackAddress = 0x0;
+	if (!IsBadReadPtr(playerAttackAddress)) {
+		*playerAttackAddress = 0x0;
+	}
+
 }
 
 uintptr_t findDMAAddy(uintptr_t ptr, vector<uintptr_t> offsets)
@@ -318,6 +347,10 @@ uintptr_t findDMAAddy(uintptr_t ptr, vector<uintptr_t> offsets)
 
 	for (unsigned int i = 0; i < offsets.size(); ++i)
 	{
+		// not tested
+		if (IsBadReadPtr((uintptr_t*)addr)) {
+			return (uintptr_t)nullptr;
+		}
 		addr = *(uintptr_t*)addr;
 		addr += offsets[i];
 	}
