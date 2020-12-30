@@ -4,7 +4,7 @@ Completely inmemory farm bot for the MT2 Rubinum private server 2020
 
 How to build:
 1. Download the sources
-2. Create an empty C++ project
+2. Create an empty C++ project (Visual Studio 2019 is what I use)
 3. In the project Explorer -> Headerfiles -> Add -> Add existing files -> select the .h files in the source folder of the bot
 4. In the project Explorer -> Sourcefiles -> Add -> Add existing files -> select the .cpp files in the source folder of the bot
 5. Go into project settings -> general settings, set configuration-type to .dll
