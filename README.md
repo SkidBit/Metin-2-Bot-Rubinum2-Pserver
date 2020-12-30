@@ -3,14 +3,10 @@
 Completely inmemory farm bot for the MT2 Rubinum private server 2020
 
 How to build:
-1. Get BlackBone https://github.com/DarthTon/Blackbone
-2. Create subproject
-3. Set Compiler options etc. to be the same as in the "Samples" subproject (very important, otherwise it won't build)
-4. Add files from the repo to the project
-5. Build as Release on x86
-6. Inject via dll injector
-7. Press F1 to start/pause the bot (you will see in the console if the bot is running)
-8. To complete shut down and remove the bot, press INSERT
+1. Build as Release on x86
+2. Inject via dll injector
+3. Press F1 to start/pause the bot (you will see in the console if the bot is running)
+4. To complete shut down and remove the bot, press INSERT
 
 How it works:
 When started the bot gets the player position and sets that position as an anchor for all the
@@ -25,8 +21,7 @@ Working as of today, December 2020.
 
 I probably won't update the offsets after major updates, so use it as long as it works.
 
-Big thanks to Rake and all the others at GuidedHacking for their guides the DLL template and a big thanks to DathTon, Blackbone is insane.
-Allthough there could be something like a handbook for usage.
+Big thanks to Rake and all the others at GuidedHacking for their guides the DLL template.
 
 And a big f*** y** to all the people on the forums that took down their tutorials on metin reversing because they
 are mad that others sell bots made with their knowledge. KNOWLEDGE SHOULD BE A FREE, OPEN, ACCESSIBLE RESOURCE!
@@ -61,4 +56,3 @@ I took that from this repo: https://github.com/hzqst/VmwareHardenedLoader.
 
 Lastly, "why do you release this?".
 Because I'm done with the game and I want to spread some knowledge.
-
