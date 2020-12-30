@@ -29,7 +29,7 @@ Working as of today, December 2020.
 
 I probably won't update the offsets after major updates, so use it as long as it works.
 
-Big thanks to Rake and all the others at GuidedHacking for their guides the DLL template.
+Big thanks to Rake and all the others at GuidedHacking for their guides and the DLL template.
 
 And a big f*** y** to all the people on the forums that took down their tutorials on metin reversing because they
 are mad that others sell bots made with their knowledge. KNOWLEDGE SHOULD BE A FREE, OPEN, ACCESSIBLE RESOURCE!
