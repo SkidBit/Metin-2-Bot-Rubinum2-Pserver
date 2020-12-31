@@ -7,21 +7,12 @@ Prebuild DLL available as release now!
 First of all: if you get banned by using this bot it's your own fault. Currently there seems to be no automatic bot detection but if someone
 sees you botting you can get banned. And if the game updates and they put in an anticheat/antibot system you can also get banned. So take care.
 
-How to build:
-1. Download the sources
-2. Create an empty C++ project (Visual Studio 2019 is what I use)
-3. In the project Explorer -> Headerfiles -> Add -> Add existing files -> select the .h files in the source folder of the bot
-4. In the project Explorer -> Sourcefiles -> Add -> Add existing files -> select the .cpp files in the source folder of the bot
-5. Set Build from Debug to Release
-6. Go into project settings -> general settings, set configuration-type to .dll
-8. Go into project settings -> general settings, set c++ Standard to ISO c++ 17
-9. Build as Release on x86
-10. Inject via dll injector
-11. Press F1 to start/pause the bot (the bot will take a moment to get started)
-12. To completely shut down and remove the bot, press INSERT
-
-If there is an error regarding char* or LPCWSTR change the encoding in the project settings or take away the "L" from the
-console title in the console.h file.
+How to use:
+1. Download prebuild .dll from Release page and skip to 3.
+2. Or: Download sources, and build with VS 2019
+3. Inject via dll injector
+4. Press F1 to start/pause the bot (the bot will take a moment to get started)
+5. To completely shut down and remove the bot, press INSERT
 
 How it works:
 When started the bot gets the player position and sets that position as an anchor for all the
@@ -29,11 +20,6 @@ following distance calculation to metin stones. The bot also enables the "SkipCo
 This is done to avoid getting stuck on mobs or terrain. Then the bot looks for the closest stone, sets the
 "isVisible" bit and writes the UID of the metin stone to a location that makes the player move to
 and attack the stone. After the stone is dead the "pickUpCloseItems" function is called via a "thiscall".
-
-I know that the coding is sh** but this project still was a great learning experience.
-I let two windows run with the bot for 24 hours and it worked perfectly, so I guess there are no memleaks or similar.
-
-I probably won't update the offsets after major updates, so use it as long as it works (and don't update the client if you don't have to!).
 
 Big thanks to Rake and all the others at GuidedHacking for their guides and the DLL template.
 
