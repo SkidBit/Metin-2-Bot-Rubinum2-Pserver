@@ -10,7 +10,7 @@ void console(LPVOID hModule) { //console assignment
 
 		AttachConsole(GetProcessId((hModule)));
 
-		SetConsoleTitle(L"Definitely not a bot");
+		SetConsoleTitle(L"SteinBoxer v1.1");
 
 		// disable close button
 		EnableMenuItem(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE, MF_DISABLED);

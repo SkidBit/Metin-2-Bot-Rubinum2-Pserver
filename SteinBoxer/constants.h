@@ -15,18 +15,21 @@ const uintptr_t offsetToMobIsVisible = 0x68;
 
 //ATTACK MOB WITH ID
 //base offset
+// TODO: get this address via function hook
 const uintptr_t offsetToPlayerControlObject = 0x1CF8528;
 //int
 const uintptr_t offsetToAttackUID = 0x50;
 
 //WALLHACK
 //base offset
+// TODO: get this address via function hooks
 const uintptr_t offsetWallHackBase = 0x1CF853C;
 //byte
 const uintptr_t offsetWallHackOne = 0xC;
 const uintptr_t offsetWallHackTwo = 0x1C5C;
 
 //PLAYER
+// TODO: get this address via function hook
 const uintptr_t offsetToPlayerBase = 0x1C6C354;
 const uintptr_t offsetToPlayerOne = 0xC;
 //float
