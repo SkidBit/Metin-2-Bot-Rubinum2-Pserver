@@ -7,4 +7,6 @@ namespace mem {
 	char* ScanBasic(char* pattern, char* mask, char* begin, intptr_t size);
 	char* ScanInternal(char* pattern, char* mask, char* begin, intptr_t size);
 	char* ScanModIn(char* pattern, char* mask, std::string modName);
+	std::vector<BYTE> detour32(void* src, void* dst, int len);
+	void restoreBytes(void* address, std::vector<BYTE>bytesToRestore);
 }

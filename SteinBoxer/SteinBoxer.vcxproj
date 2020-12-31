@@ -151,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="entityHook.h" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="mem.cpp" />
     <ClCompile Include="stdafx.cpp" />

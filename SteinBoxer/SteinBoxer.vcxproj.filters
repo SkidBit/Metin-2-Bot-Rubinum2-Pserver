@@ -56,5 +56,8 @@
     <ClCompile Include="game.cpp">
       <Filter>game</Filter>
     </ClCompile>
+    <ClCompile Include="entityHook.h">
+      <Filter>Headerdateien</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

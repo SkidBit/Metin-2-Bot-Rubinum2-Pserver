@@ -14,45 +14,45 @@ bool game::isPlayerAttackingMob() {
 	return *mobUidAddress != 0;
 }
 
-uintptr_t game::getOffsetOfClosestMetinStone(int scansize, vector<float> anchorPosition) {
+uintptr_t game::getPointerOfClosestMetinStone(int scansize, vector<float> anchorPosition) {
 	cout << "Searching for metin stones now..." << endl;
 
-	uintptr_t offsetOfClosestStone = 0x0;
+	uintptr_t pointerToClosestStone = 0x0;
 	float distanceToClosestStone = INFINITY;
 	int tempMobId;
-	int* tempMobIdAddress;
 	vector<float> tempMobPos;
 	float tempDistanceToClosestStone;
 
 
-	for (int i = 0; i < scansize; i++) {
-		uintptr_t currentOffsetToEntity = i * 4;
-
-		tempMobIdAddress = (int*)mem::findDMAAddy(baseAdressMainMod + offsetToMobList, { currentOffsetToEntity, offsetToMobId });
-		if (mem::IsBadReadPtr(tempMobIdAddress)) {
-			tempMobId = 0;
-		}
-		else {
-			tempMobId = *tempMobIdAddress;
-		}
-
-
-		// check if mob is metin stone
-		if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd) {
-			cout << "Stone found, mobID: " << dec << tempMobId << endl;
-			tempMobPos = game::getMobPos(currentOffsetToEntity);
-			//calculate distance to anchor position
-			tempDistanceToClosestStone = sqrt(pow(anchorPosition.at(0) - tempMobPos.at(0), 2) + pow(anchorPosition.at(1) - tempMobPos.at(1), 2));
-			cout << "Distance to stone: " << dec << tempDistanceToClosestStone << endl;
-			if (tempDistanceToClosestStone < distanceToClosestStone) {
-				distanceToClosestStone = tempDistanceToClosestStone;
-				offsetOfClosestStone = currentOffsetToEntity;
+	for (int i = 0; i < 255; i++) {
+		if (entities[i] != 0) {
+			if (mem::IsBadReadPtr((uintptr_t*)entities[i])) {
+				tempMobId = 0;
 			}
-		}
+			else {
+				//cout << "mobObj address: 0x" << hex << entities[i] << " offset: 0x" << offsetToMobId <<  " mobId address: 0x" << entities[i] + offsetToMobId << endl;
+				tempMobId = *(int*)(entities[i] + offsetToMobId);
 
+			}
+
+			// check if mob is metin stone
+			if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd) {
+				cout << "Stone found, mobID: " << dec << tempMobId << endl;
+				
+				tempMobPos = game::getMobPos(entities[i]);
+				//calculate distance to anchor position
+				tempDistanceToClosestStone = sqrt(pow(anchorPosition.at(0) - tempMobPos.at(0), 2) + pow(anchorPosition.at(1) - tempMobPos.at(1), 2));
+				cout << "Distance to stone: " << dec << tempDistanceToClosestStone << endl;
+				if (tempDistanceToClosestStone < distanceToClosestStone) {
+					distanceToClosestStone = tempDistanceToClosestStone;
+					pointerToClosestStone = entities[i];
+				}
+			}
+
+		}
 	}
 
-	return offsetOfClosestStone;
+	return pointerToClosestStone;
 }
 
 void game::enableWallhack() {
@@ -70,15 +70,15 @@ void game::disableWallhack() {
 	}
 }
 
-void game::playerAttackMobWithUid(uintptr_t offsetInMobList) {
+void game::playerAttackMobWithUid(uintptr_t pointerToMobEntity) {
 
 	// make mob visible
-	BYTE* isVisibleAddress = (BYTE*)mem::findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMobList, offsetToMobIsVisible });
+	BYTE* isVisibleAddress = (BYTE*)(pointerToMobEntity + offsetToMobIsVisible);
 	if (!mem::IsBadReadPtr(isVisibleAddress)) {
 		*isVisibleAddress = 0x1;
 	}
 
-	int mobUid = getMobUid(offsetInMobList);
+	int mobUid = getMobUid(pointerToMobEntity);
 
 	// attack mob
 	int* attackMobAddress = (int*)mem::findDMAAddy(baseAdressMainMod + offsetToPlayerControlObject, { offsetToAttackUID });
@@ -87,8 +87,8 @@ void game::playerAttackMobWithUid(uintptr_t offsetInMobList) {
 	}
 }
 
-int game::getMobUid(uintptr_t offsetInMoblist) {
-	int* mobUidAddress = (int*)mem::findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobUniqueId });
+int game::getMobUid(uintptr_t pointerToMob) {
+	int* mobUidAddress = (int*)(pointerToMob + offsetToMobUniqueId);
 
 	if (!mem::IsBadReadPtr(mobUidAddress)) {
 		return *mobUidAddress;
@@ -97,15 +97,15 @@ int game::getMobUid(uintptr_t offsetInMoblist) {
 	return 0;
 }
 
-vector<float> game::getMobPos(uintptr_t offsetInMoblist) {
+vector<float> game::getMobPos(uintptr_t entityPointer) {
 	vector<float> mobPos;
 	float* xPosAddress;
 	float* yPosAddress;
 	float* zPosAddress;
 
-	xPosAddress = (float*)mem::findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobXPos });
-	yPosAddress = (float*)mem::findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobYPos });
-	zPosAddress = (float*)mem::findDMAAddy(baseAdressMainMod + offsetToMobList, { offsetInMoblist,  offsetToMobZPos });
+	xPosAddress = (float*)(entityPointer + offsetToMobXPos);
+	yPosAddress = (float*)(entityPointer + offsetToMobYPos);
+	zPosAddress = (float*)(entityPointer + offsetToMobZPos);
 
 	if (!mem::IsBadReadPtr(xPosAddress) && !mem::IsBadReadPtr(yPosAddress) && !mem::IsBadReadPtr(zPosAddress)) {
 		mobPos.push_back(*xPosAddress);

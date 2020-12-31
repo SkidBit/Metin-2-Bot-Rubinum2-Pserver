@@ -2,6 +2,46 @@
 #include "mem.h"
 using namespace std;
 
+void mem::restoreBytes(void* address, vector<BYTE>bytesToRestore) {
+
+	DWORD curProtection;
+	VirtualProtect(address, bytesToRestore.size(), PAGE_EXECUTE_READWRITE, &curProtection);
+
+	memcpy(address, bytesToRestore.data(), bytesToRestore.size());
+
+	DWORD temp;
+	VirtualProtect(address, bytesToRestore.size(), curProtection, &temp);
+}
+
+vector<BYTE> mem::detour32(void* src, void* dst, int len)
+{
+	DWORD curProtection;
+	VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &curProtection);
+
+	// return original bytes of function for restoring
+	// len < 5 does not work!
+	vector<BYTE> originalBytes;
+	BYTE currentByte;
+
+	for (int i = 0; i < len; i++) {
+		currentByte = *(BYTE*)((BYTE*)src + i);
+		originalBytes.push_back(currentByte);
+	}
+
+	memset(src, 0x90, len);
+
+	uintptr_t relativeAddress = ((uintptr_t)dst - (uintptr_t)src) - 5;
+
+	*(BYTE*)src = 0xE9;
+	*(uintptr_t*)((uintptr_t)src + 1) = relativeAddress;
+
+	DWORD temp;
+	VirtualProtect(src, len, curProtection, &temp);
+
+	return originalBytes;
+}
+
+
 uintptr_t mem::findDMAAddy(uintptr_t ptr, vector<uintptr_t> offsets)
 {
 	uintptr_t addr = ptr;

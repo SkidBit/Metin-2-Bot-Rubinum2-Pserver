@@ -3,20 +3,24 @@
 #include "mem.h"
 #include "constants.h"
 #include "game.h"
-
+#include "entityHook.h"
 
 using namespace std;
 #define show_console 1 //1 = show console ~ 0 = don't show console
 
-typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
-__pickupCloseFunc pickupCloseFunc;
-
-bool botRunning = false;
-bool firstLoop = true;
-
 uintptr_t baseAdressMainMod;
+vector<BYTE> originalBytesEntiyEditFunction;
+uintptr_t originalStartEntiyEditFunction = 0x0;
+uintptr_t entities[255];
+uintptr_t entityPointer;
 
 DWORD WINAPI MainThread(LPVOID param) {
+	bool botRunning = false;
+	bool firstLoop = true;
+
+	typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
+	__pickupCloseFunc pickupCloseFunc;
+
 	baseAdressMainMod = (uintptr_t)GetModuleHandle(NULL);
 	cout << "-----DEBUGGING-----" << endl;
 	cout << "Main module base address: 0x" << hex << baseAdressMainMod << endl;
@@ -30,14 +34,26 @@ DWORD WINAPI MainThread(LPVOID param) {
 	uintptr_t pickupFunctionClassPointer = *(uintptr_t*)(pickupFunctionClassPointerFunctionAddress + pickupFunctionOffsetToClassPointer);
 
 	cout << "Pickup classpointer address: 0x" << hex << pickupFunctionClassPointer << endl;
+
+	uintptr_t editEntityFunctionAddress = (uintptr_t)mem::ScanModIn((char*)editEntityFunctionPattern, (char*)editEntityFunctionMask, "rbclient.exe");
+
+	cout << "Edit entity function address: 0x" << hex << editEntityFunctionAddress << endl;
+
+	originalStartEntiyEditFunction = editEntityFunctionAddress + 5;
+	originalBytesEntiyEditFunction = mem::detour32((void*)editEntityFunctionAddress, entityHook, 8);
+
 	cout << "-----DEBUGGING-----" << endl;
 	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
 	// pickupCloseFunc(*(void**)0x020F8528);
 
 	vector<float> anchorPosition;
-	uintptr_t offsetClosestStone;
+	uintptr_t pointerOfClosestStone;
 	chrono::steady_clock::time_point timerStart;
 	chrono::steady_clock::time_point timerRound;
+	
+	cout << "" << endl;
+	cout << "[i] F1 to toggle bot" << endl;
+	cout << "[i] INSERT to shutdown bot and eject DLL" << endl;
 
 	while (true) {
 
@@ -47,7 +63,6 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 			if (firstLoop) {
 				cout << "[i] FirstLoop setup is run..." << endl;
-				Sleep(5000);
 				// enable wallhack
 				game::enableWallhack();
 				cout << "[i] WH enabled" << endl;
@@ -67,9 +82,9 @@ DWORD WINAPI MainThread(LPVOID param) {
 				Sleep(3000);
 
 				// get closest stone
-				offsetClosestStone = game::getOffsetOfClosestMetinStone(1500, anchorPosition);
+				pointerOfClosestStone = game::getPointerOfClosestMetinStone(1500, anchorPosition);
 				// attack stone
-				game::playerAttackMobWithUid(offsetClosestStone);
+				game::playerAttackMobWithUid(pointerOfClosestStone);
 				// start timing to detect attackid bug
 				timerStart = chrono::steady_clock::now();
 				cout << "[i] Attacking NOW..." << endl;
@@ -84,7 +99,6 @@ DWORD WINAPI MainThread(LPVOID param) {
 			}
 
 		}
-
 
 		if (GetAsyncKeyState(VK_F1) & 1) {
 			botRunning = !botRunning;
@@ -103,7 +117,12 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
 
-			cout << "GOODBYE, BOT TERMINATING NOW" << endl;
+			// unhooking so we don't crash the game
+			mem::restoreBytes((void*)editEntityFunctionAddress, originalBytesEntiyEditFunction);
+			// disable wallhack
+			game::disableWallhack();
+
+			cout << "[i] GOODBYE, BOT TERMINATING NOW" << endl;
 			Sleep(1000);
 
 			if (show_console) {

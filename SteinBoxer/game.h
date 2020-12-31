@@ -4,12 +4,12 @@
 
 namespace game {
 	bool isPlayerAttackingMob();
-	uintptr_t getOffsetOfClosestMetinStone(int scansize, std::vector<float> anchorPosition);
+	uintptr_t getPointerOfClosestMetinStone(int scansize, std::vector<float> anchorPosition);
 	void enableWallhack();
 	void disableWallhack();
-	void playerAttackMobWithUid(uintptr_t offsetInMobList);
-	int getMobUid(uintptr_t offsetInMoblist);
-	std::vector<float> getMobPos(uintptr_t offsetInMoblist);
+	void playerAttackMobWithUid(uintptr_t pointerToMob);
+	int getMobUid(uintptr_t pointerToMob);
+	std::vector<float> getMobPos(uintptr_t pointerToMob);
 	std::vector<float> getPlayerPos();
 	void resetPlayerAtatck();
 }
