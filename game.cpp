@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "game.h"
-#include "offsets.h"
+#include "constants.h"
 using namespace std;
 
 bool game::isPlayerAttackingMob() {
