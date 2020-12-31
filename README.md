@@ -12,10 +12,11 @@ How to build:
 4. In the project Explorer -> Sourcefiles -> Add -> Add existing files -> select the .cpp files in the source folder of the bot
 5. Set Build from Debug to Release
 6. Go into project settings -> general settings, set configuration-type to .dll
-7. Build as Release on x86
-8. Inject via dll injector
-9. Press F1 to start/pause the bot (the bot will take a moment to get started)
-10. To completely shut down and remove the bot, press INSERT
+8. Go into project settings -> general settings, set c++ Standard to ISO c++ 17
+9. Build as Release on x86
+10. Inject via dll injector
+11. Press F1 to start/pause the bot (the bot will take a moment to get started)
+12. To completely shut down and remove the bot, press INSERT
 
 If there is an error regarding char* or LPCWSTR change the encoding in the project settings or take away the "L" from the
 console title in the console.h file.
