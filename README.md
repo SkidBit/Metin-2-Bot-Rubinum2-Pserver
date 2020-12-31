@@ -22,6 +22,7 @@ This is done to avoid getting stuck on mobs or terrain. Then the bot looks for t
 and attack the stone. After the stone is dead the "pickUpCloseItems" function is called via a "thiscall" function call.
 
 Big thanks to Rake and all the others at GuidedHacking for their guides and the DLL template.
+Thanks to the x64dbg project for the ntdll https://github.com/x64dbg/x64dbg.
 
 And a big f*** y** to all the people on the forums that took down their tutorials on metin reversing because they
 are mad that others sell bots made with their knowledge. KNOWLEDGE SHOULD BE A FREE, OPEN, ACCESSIBLE RESOURCE!
