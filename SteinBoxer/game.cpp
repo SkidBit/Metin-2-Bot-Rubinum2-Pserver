@@ -14,7 +14,7 @@ bool game::isPlayerAttackingMob() {
 	return *mobUidAddress != 0;
 }
 
-uintptr_t game::getPointerOfClosestMetinStone(int scansize, vector<float> anchorPosition) {
+uintptr_t game::getPointerOfClosestMetinStone(vector<float> anchorPosition) {
 	cout << "Searching for metin stones now..." << endl;
 
 	uintptr_t pointerToClosestStone = 0x0;

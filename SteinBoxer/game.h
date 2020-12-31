@@ -4,7 +4,7 @@
 
 namespace game {
 	bool isPlayerAttackingMob();
-	uintptr_t getPointerOfClosestMetinStone(int scansize, std::vector<float> anchorPosition);
+	uintptr_t getPointerOfClosestMetinStone(std::vector<float> anchorPosition);
 	void enableWallhack();
 	void disableWallhack();
 	void playerAttackMobWithUid(uintptr_t pointerToMob);

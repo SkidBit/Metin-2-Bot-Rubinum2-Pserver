@@ -82,7 +82,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 				Sleep(3000);
 
 				// get closest stone
-				pointerOfClosestStone = game::getPointerOfClosestMetinStone(1500, anchorPosition);
+				pointerOfClosestStone = game::getPointerOfClosestMetinStone(anchorPosition);
 				// attack stone
 				game::playerAttackMobWithUid(pointerOfClosestStone);
 				// start timing to detect attackid bug
