@@ -1,6 +1,7 @@
 # Metin-2-Bot-Rubinum2-Pserver
 
 Completely inmemory farm bot for the MT2 Rubinum private server 2020
+Prebuild DLL available as release now!
 
 First of all: if you get banned by using this bot it's your own fault. Currently there seems to be no automatic bot detection but if someone
 sees you botting you can get banned. And if the game updates and they put in an anticheat/antibot system you can also get banned. So take care.
@@ -30,7 +31,6 @@ and attack the stone. After the stone is dead the "pickUpCloseItems" function is
 
 I know that the coding is sh** but this project still was a great learning experience.
 I let two windows run with the bot for 24 hours and it worked perfectly, so I guess there are no memleaks or similar.
-Working as of today, December 2020.
 
 I probably won't update the offsets after major updates, so use it as long as it works (and don't update the client if you don't have to!).
 
