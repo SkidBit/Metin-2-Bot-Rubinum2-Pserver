@@ -9,7 +9,7 @@ sees you botting you can get banned. And if the game updates and they put in an 
 
 How to use:
 1. Download prebuild .dll from Release page and skip to 3.
-2. Or: Download sources, and build with VS 2019
+2. Or: Download sources, and build with VS 2019 (Release, x86)
 3. Inject via dll injector
 4. Press F1 to start/pause the bot (the bot will take a moment to get started)
 5. To completely shut down and remove the bot, press INSERT
