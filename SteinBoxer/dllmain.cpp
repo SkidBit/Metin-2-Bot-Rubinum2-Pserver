@@ -73,7 +73,6 @@ DWORD WINAPI MainThread(LPVOID param) {
 				cout << "[i] WH enabled" << endl;
 				// get Anchor position
 				anchorPosition = game::getPlayerEntity()->getPosition();
-				cout << hex << game::getPlayerEntity() << endl;
 				cout << "[i] Anchor position set to " << anchorPosition.x << " / " << anchorPosition.y << endl;
 
 				firstLoop = false;

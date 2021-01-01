@@ -58,14 +58,8 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 			
 			tempMobId = entities[i]->getMobId();
 
-			if (tempMobId > 100 && tempMobId < 200) {
-				cout << "mob: " << hex << entities[i] << endl;
-			}
-
-
 			// check if mob is metin stone
 			if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd) {
-				cout << "stone: " << hex << entities[i] << endl;
 				//cout << "Stone found, mobID: " << dec << tempMobId << endl;
 				//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
 				stoneCount++;
