@@ -19,9 +19,10 @@ When started the bot gets the player position and sets that position as an ancho
 following distance calculation to metin stones. The bot also enables the "SkipCollision" function.
 This is done to avoid getting stuck on mobs or terrain. Then the bot looks for the closest stone, sets the
 "isVisible" bit and writes the UID of the metin stone to a location that makes the player move to
-and attack the stone. After the stone is dead the "pickUpCloseItems" function is called via a "thiscall".
+and attack the stone. After the stone is dead the "pickUpCloseItems" function is called via a "thiscall" function call.
 
 Big thanks to Rake and all the others at GuidedHacking for their guides and the DLL template.
+And Thanks to the x64dbg project for the ntdll https://github.com/x64dbg/x64dbg.
 
 And a big f*** y** to all the people on the forums that took down their tutorials on metin reversing because they
 are mad that others sell bots made with their knowledge. KNOWLEDGE SHOULD BE A FREE, OPEN, ACCESSIBLE RESOURCE!
