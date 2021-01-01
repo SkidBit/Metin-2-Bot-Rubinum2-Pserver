@@ -11,12 +11,16 @@ using namespace std;
 uintptr_t baseAdressMainMod;
 vector<BYTE> originalBytesEntiyEditFunction;
 uintptr_t originalStartEntiyEditFunction = 0x0;
-uintptr_t entities[255];
-uintptr_t entityPointer;
+Entity* entities[255];
+Entity* entityPointer;
+uintptr_t editEntityFunctionAddress;
+
+bool botRunning = false;
+bool freezeWhenPlayersPresent = true;
+bool firstLoop = true;
+bool shutdown = false;
 
 DWORD WINAPI MainThread(LPVOID param) {
-	bool botRunning = false;
-	bool firstLoop = true;
 
 	typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
 	__pickupCloseFunc pickupCloseFunc;
@@ -35,7 +39,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 	cout << "Pickup classpointer address: 0x" << hex << pickupFunctionClassPointer << endl;
 
-	uintptr_t editEntityFunctionAddress = (uintptr_t)mem::ScanModIn((char*)editEntityFunctionPattern, (char*)editEntityFunctionMask, "rbclient.exe");
+	editEntityFunctionAddress = (uintptr_t)mem::ScanModIn((char*)editEntityFunctionPattern, (char*)editEntityFunctionMask, "rbclient.exe");
 
 	cout << "Edit entity function address: 0x" << hex << editEntityFunctionAddress << endl;
 
@@ -46,16 +50,17 @@ DWORD WINAPI MainThread(LPVOID param) {
 	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
 	// pickupCloseFunc(*(void**)0x020F8528);
 
-	vector<float> anchorPosition;
-	uintptr_t pointerOfClosestStone;
+	Vector3 anchorPosition = Vector3{ 0,0,0 };
+	Entity* closestStone;
 	chrono::steady_clock::time_point timerStart;
 	chrono::steady_clock::time_point timerRound;
-	
+
 	cout << "" << endl;
 	cout << "[i] F1 to toggle bot" << endl;
+	cout << "[i] F2 to toggle freeze option, default value is ON" << endl;
 	cout << "[i] INSERT to shutdown bot and eject DLL" << endl;
 
-	while (true) {
+	while (!shutdown) {
 
 		// bot loop
 		// check if bot enabled
@@ -67,38 +72,54 @@ DWORD WINAPI MainThread(LPVOID param) {
 				game::enableWallhack();
 				cout << "[i] WH enabled" << endl;
 				// get Anchor position
-				anchorPosition = game::getPlayerPos();
-				cout << "[i] Anchor position set" << endl;
+				anchorPosition = game::getPlayerEntity()->getPosition();
+				cout << hex << game::getPlayerEntity() << endl;
+				cout << "[i] Anchor position set to " << anchorPosition.x << " / " << anchorPosition.y << endl;
 
 				firstLoop = false;
 			}
 
-			if (!game::isPlayerAttackingMob()) {
+			if (!(freezeWhenPlayersPresent && game::areOtherPlayersPresent())) {
+
+				if (!game::isPlayerAttackingMob()) {
+					Sleep(1000);
+					// pickup and wait for short amount
+					pickupCloseFunc(*(void**)pickupFunctionClassPointer);
+					cout << "[i] Picked up loot" << endl;
+					// sleeps are neccessary because stone will be read as alive short time after death
+					Sleep(3000);
+
+					// get closest stone
+					closestStone = game::getClosestMetinStone(anchorPosition);
+					// attack stone
+					game::playerAttackMobWithUid(closestStone);
+					// start timing to detect attackid bug
+					timerStart = chrono::steady_clock::now();
+					cout << "[i] Attacking Stone with mobID: " << dec << closestStone->getMobId() << " and Uid of: " << closestStone->getUid() << endl;
+				}
+
+				timerRound = chrono::steady_clock::now();
+
+				if (chrono::duration_cast<chrono::seconds>(timerRound - timerStart).count() > 60) {
+					// 60 seconds ago we started attacking and stone still lives, game is buggy
+					game::resetPlayerAtatck();
+					cout << "[!] Game bugged out, reset issued" << endl;
+				}
+			}
+			else {
+				cout << "[i] Freeze active and players present. Waiting..." << endl;
 				Sleep(1000);
-				// pickup and wait for short amount
-				pickupCloseFunc(*(void**)pickupFunctionClassPointer);
-				cout << "[i] Picked up loot" << endl;
-				// sleeps are neccessary because stone will be read as alive short time after death
-				Sleep(3000);
-
-				// get closest stone
-				pointerOfClosestStone = game::getPointerOfClosestMetinStone(anchorPosition);
-				// attack stone
-				game::playerAttackMobWithUid(pointerOfClosestStone);
-				// start timing to detect attackid bug
-				timerStart = chrono::steady_clock::now();
-				cout << "[i] Attacking NOW..." << endl;
 			}
-
-			timerRound = chrono::steady_clock::now();
-
-			if (chrono::duration_cast<chrono::seconds>(timerRound - timerStart).count() > 60) {
-				// 60 seconds ago we started attacking and stone still lives, game is buggy
-				game::resetPlayerAtatck();
-				cout << "[!] Game bugged out, reset issued" << endl;
-			}
-
 		}
+
+		Sleep(1);
+	}
+	cout << "main thread exiting" << endl;
+	return 0;
+}
+
+DWORD WINAPI ControlsThread(LPVOID param) {
+	while (!shutdown) {
 
 		if (GetAsyncKeyState(VK_F1) & 1) {
 			botRunning = !botRunning;
@@ -111,34 +132,48 @@ DWORD WINAPI MainThread(LPVOID param) {
 				cout << "[i] WH disabled" << endl;
 				firstLoop = true;
 			}
-			
+
+			Sleep(200);
+		}
+
+		if (GetAsyncKeyState(VK_F2) & 1) {
+			freezeWhenPlayersPresent = !freezeWhenPlayersPresent;
+			if (freezeWhenPlayersPresent) {
+				cout << "[->] FREEZE WHEN PLAYERS PRESENT ON" << endl;
+			}
+			else {
+				cout << "[->] FREEZE WHEN PLAYERS PRESENT OFF" << endl;
+			}
+
 			Sleep(200);
 		}
 
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
 
-			// unhooking so we don't crash the game
-			mem::restoreBytes((void*)editEntityFunctionAddress, originalBytesEntiyEditFunction);
-			// disable wallhack
-			game::disableWallhack();
-
-			cout << "[i] GOODBYE, BOT TERMINATING NOW" << endl;
-			Sleep(1000);
-
-			if (show_console) {
-				auto temp = GetConsoleWindow();
-				FreeConsole();
-				PostMessage(temp, WM_QUIT, 0, 0);
-			}
-			break;
+			shutdown = true;
+			Sleep(5000);
 		}
+
 		Sleep(1);
+	}
+
+	// unhooking so we don't crash the game
+	mem::restoreBytes((void*)editEntityFunctionAddress, originalBytesEntiyEditFunction);
+	// disable wallhack
+	game::disableWallhack();
+
+	cout << "[i] GOODBYE, BOT TERMINATING NOW" << endl;
+	Sleep(1000);
+
+	if (show_console) {
+		auto temp = GetConsoleWindow();
+		FreeConsole();
+		PostMessage(temp, WM_QUIT, 0, 0);
 	}
 
 	FreeLibraryAndExitThread((HMODULE)param, 0);
 	return 0;
 }
-
 
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
@@ -146,7 +181,9 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 ) {
 	switch (ul_reason_for_call) {
 	case DLL_PROCESS_ATTACH: {
-		CreateThread(nullptr, 0, MainThread, hModule, 0, nullptr);
+		DisableThreadLibraryCalls((HMODULE)hModule);
+		CreateThread(nullptr, 0, MainThread, hModule, 0, 0);
+		CreateThread(nullptr, 0, ControlsThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 

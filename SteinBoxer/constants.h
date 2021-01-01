@@ -1,17 +1,40 @@
 #pragma once
 #include "stdafx.h"
 
-//MOB STRUCT
-//int
-const uintptr_t offsetToMobId = 0x410;
-//floats
-const uintptr_t offsetToMobXPos = 0x4;
-const uintptr_t offsetToMobYPos = 0x8;
-const uintptr_t offsetToMobZPos = 0xC;
-const uintptr_t offsetToMobUniqueId = 0x197C;
-//2 if alive 1 if dead
-const uintptr_t offsetToMobIsAlive = 0x458;
-const uintptr_t offsetToMobIsVisible = 0x68;
+#define CHECK_BAD_PTR(x) if(IsBadReadPtr(this,sizeof(x))) return nullptr
+#define CHECK_BAD(x) if(IsBadReadPtr(this, sizeof(x))) return
+#define CHECK_BAD_NUM(x) if(IsBadReadPtr(this, sizeof(x))) return 0
+#define CHECK_BAD_VEC3(x) if(IsBadReadPtr(this, sizeof(x))) return Vector3{0,0,0}
+
+struct Vector3 { float x, y, z; };
+
+class Entity
+{
+public:
+	char pad_0000[4]; //0x0000
+	Vector3 position; //0x0004
+	int32_t isPlayerCharacter; //0x0010 // if player 3F800000
+	char pad_0014[84]; //0x0014
+	int32_t isRendered; //0x0068
+	char pad_006C[932]; //0x006C
+	int32_t mobId; //0x0410
+	char pad_0414[68]; //0x0414
+	int32_t mobIsAlive; //0x0458
+	char pad_045C[4]; //0x045C
+	int32_t isOwnPlayer; //0x0460 1 if own 0 else
+	char pad_0464[5400]; //0x0464
+	int32_t uid; //0x197C
+
+	Vector3 getPosition() { CHECK_BAD_VEC3(Entity); position.y = position.y * -1; return position; };
+	int32_t getIsPlayerCharacter() { CHECK_BAD_NUM(Entity); return isPlayerCharacter; };
+	int32_t getIsRendered() { CHECK_BAD_NUM(Entity); return isRendered; };
+	void setIsRendered(int32_t value) { CHECK_BAD(Entity); isRendered = value; };
+	int32_t getMobIsAlive() { CHECK_BAD_NUM(Entity); return mobIsAlive; };
+	int32_t getUid() { CHECK_BAD_NUM(Entity); return uid; };
+	int32_t getIsOwnPlayer() { CHECK_BAD_NUM(Entity); return isOwnPlayer; };
+	int32_t getMobId() { CHECK_BAD_NUM(Entity); return mobId; };
+}; 
+
 
 //ATTACK MOB WITH ID
 //base offset
@@ -28,24 +51,22 @@ const uintptr_t offsetWallHackBase = 0x1CF853C;
 const uintptr_t offsetWallHackOne = 0xC;
 const uintptr_t offsetWallHackTwo = 0x1C5C;
 
-//PLAYER
-// TODO: get this address via function hook
-const uintptr_t offsetToPlayerBase = 0x1C6C354;
-const uintptr_t offsetToPlayerOne = 0xC;
-//float
-const uintptr_t offsetToPlayerXPos = 0x2DC;
-const uintptr_t offsetToPlayerYPos = 0x2E0;
-const uintptr_t offsetToPlayerZPos = 0x2E4;
-
 //ids
 const int metinIdStart = 8000;
 const int metinIdEnd = 8112;
 
+const int playerIdentifier = 0x3F800000;
+
 //globals
 extern uintptr_t baseAdressMainMod;
-extern uintptr_t entities[255];
-extern uintptr_t entityPointer;
+extern Entity* entities[255];
+extern Entity* entityPointer;
 extern uintptr_t originalStartEntiyEditFunction;
+extern bool shutdown;
+extern bool botRunning;
+extern bool freezeWhenPlayersPresent;
+extern bool firstLoop;
+extern uintptr_t editEntityFunctionAddress;
 
 inline const char* pickupFunctionPattern = "\x55\x8B\xEC\x6A\x00\x68\x00\x00\x00\x00\x64\x00\x00\x00\x00\x00\x00\x00\x00\x00\x53\x56\x57\xA1\x00\x00\x00\x00\x00\x00\x00\x00\x45\x00\x64\x00\x00\x00\x00\x00\x00\x00\x00\x00\xF0\x8D\x00\x00\x8B\x01";
 inline const char* pickupFunctionMask = "xxxx?x????x?????????xxxx????????x?x?????????xx??xx";

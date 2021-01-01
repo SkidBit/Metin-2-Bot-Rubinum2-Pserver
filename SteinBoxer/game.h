@@ -1,15 +1,15 @@
 #pragma once
 #include "stdafx.h"
 #include "mem.h"
+#include "constants.h"
 
 namespace game {
 	bool isPlayerAttackingMob();
-	uintptr_t getPointerOfClosestMetinStone(std::vector<float> anchorPosition);
+	Entity* getClosestMetinStone(Vector3 anchorPosition);
 	void enableWallhack();
 	void disableWallhack();
-	void playerAttackMobWithUid(uintptr_t pointerToMob);
-	int getMobUid(uintptr_t pointerToMob);
-	std::vector<float> getMobPos(uintptr_t pointerToMob);
-	std::vector<float> getPlayerPos();
+	void playerAttackMobWithUid(Entity* mobEntity);
 	void resetPlayerAtatck();
+	Entity* getPlayerEntity();
+	bool areOtherPlayersPresent();
 }
