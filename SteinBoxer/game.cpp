@@ -7,7 +7,7 @@ Entity* game::getPlayerEntity() {
 	for (int i = 0; i < 254; i++) {
 		if (entities[i] != 0) {
 			if (entities[i]->getIsOwnPlayer() == 1 && entities[i]->getIsPlayerCharacter() == playerIdentifier) {
-				cout << "found own player: " << hex << entities[i] << endl;
+				//cout << "found own player: " << hex << entities[i] << endl;
 				return entities[i];
 			}
 		}
@@ -34,7 +34,7 @@ bool game::areOtherPlayersPresent() {
 		if (entities[i] != 0) {
 			if (entities[i]->getIsPlayerCharacter() == playerIdentifier) {
 				playerCount++;
-				cout << "some player found at: 0x" << hex << entities[i] << endl;
+				//cout << "some player found at: 0x" << hex << entities[i] << endl;
 			}
 		}
 	}
