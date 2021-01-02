@@ -135,7 +135,9 @@ DWORD WINAPI PickupSpamThread(LPVOID param) {
 
 	while (!shutdown) {
 		if (pickupSpam) {
-			game::pickupItems();
+			if (!(freezeWhenPlayersPresent && game::areOtherPlayersPresent())) {
+				game::pickupItems();
+			}
 		}
 		Sleep(100);
 	}
