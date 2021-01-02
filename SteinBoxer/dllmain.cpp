@@ -19,6 +19,7 @@ bool botRunning = false;
 bool freezeWhenPlayersPresent = true;
 bool firstLoop = true;
 bool shutdown = false;
+bool pickupSpam = false;
 
 Vector3 anchorPosition = Vector3{ 0,0,0 };
 
@@ -47,6 +48,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 	cout << "" << endl;
 	cout << "[i] F1 to toggle bot" << endl;
 	cout << "[i] F2 to toggle freeze option, default value is ON" << endl;
+	cout << "[i] F3 to toggle pickup spam, default value is OFF" << endl;
 	cout << "[i] INSERT to shutdown bot and eject DLL" << endl;
 
 	while (!shutdown) {
@@ -129,6 +131,18 @@ DWORD WINAPI MainThread(LPVOID param) {
 	return 0;
 }
 
+DWORD WINAPI PickupSpamThread(LPVOID param) {
+
+	while (!shutdown) {
+		if (pickupSpam) {
+			game::pickupItems();
+		}
+		Sleep(100);
+	}
+	cout << "[i] PickupSpam thread exiting" << endl;
+	return 0;
+}
+
 DWORD WINAPI FlushThread(LPVOID param) {
 
 	while (!shutdown) {
@@ -162,7 +176,6 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 				cout << "[i] WH disabled" << endl;
 				firstLoop = true;
 			}
-
 			Sleep(200);
 		}
 
@@ -174,7 +187,17 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 			else {
 				cout << "[->] FREEZE WHEN PLAYERS PRESENT OFF" << endl;
 			}
+			Sleep(200);
+		}
 
+		if (GetAsyncKeyState(VK_F3) & 1) {
+			pickupSpam = !pickupSpam;
+			if (pickupSpam) {
+				cout << "[->] PICKUP SPAM ON" << endl;
+			}
+			else {
+				cout << "[->] PICKUP SPAM OFF" << endl;
+			}
 			Sleep(200);
 		}
 
@@ -216,6 +239,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		CreateThread(nullptr, 0, MainThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, ControlsThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, FlushThread, hModule, 0, 0);
+		CreateThread(nullptr, 0, PickupSpamThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 
