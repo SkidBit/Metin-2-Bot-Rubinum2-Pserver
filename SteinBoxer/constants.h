@@ -56,7 +56,7 @@ const int metinIdStart = 8000;
 const int metinIdEnd = 8112;
 const int playerIdentifier = 0x3F800000;
 
-const int distanceToPreferClosestStone = 1000;
+const int distanceToPreferClosestStone = 2000;
 
 //globals
 extern uintptr_t baseAdressMainMod;
