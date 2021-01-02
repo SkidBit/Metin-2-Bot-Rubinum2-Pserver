@@ -3,6 +3,46 @@
 #include "constants.h"
 using namespace std;
 
+typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
+bool pickupFunctionAddressesInitialized = false;
+uintptr_t pickupFunctionAddress;
+uintptr_t pickupFunctionClassPointerFunctionAddress;
+uintptr_t pickupFunctionClassPointer;
+__pickupCloseFunc pickupCloseFunc;
+
+void game::initializePickupFunctionAddresses() {
+	pickupFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionPattern, (char*)pickupFunctionMask, "rbclient.exe");
+	pickupFunctionClassPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionClassPointerFunctionPattern, (char*)pickupFunctionClassPointerFunctionMask, "rbclient.exe");
+
+	cout << "-----DEBUGGING-----" << endl;
+	cout << "Pickup function address: 0x" << hex << pickupFunctionAddress << endl;
+	cout << "Pickup classpointer function address: 0x" << hex << pickupFunctionClassPointerFunctionAddress << endl;
+
+	pickupFunctionClassPointer  = *(uintptr_t*)(pickupFunctionClassPointerFunctionAddress + pickupFunctionOffsetToClassPointer);
+
+	cout << "Pickup classpointer address: 0x" << hex << pickupFunctionClassPointer << endl;
+	cout << "-----DEBUGGING-----" << endl;
+
+	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
+
+	pickupFunctionAddressesInitialized = true;
+}
+
+void game::pickupItems() {
+
+	if (!pickupFunctionAddressesInitialized) {
+		game::initializePickupFunctionAddresses();
+	}
+
+	pickupCloseFunc(*(void**)pickupFunctionClassPointer);
+}
+
+void game::flushEntityArray() {
+	for (int i = 0; i < 254; i++) {
+		entities[i] = 0;
+	}
+}
+
 Entity* game::getPlayerEntity() {
 	for (int i = 0; i < 254; i++) {
 		if (entities[i] != 0) {
@@ -32,14 +72,14 @@ bool game::areOtherPlayersPresent() {
 
 	for (int i = 0; i < 255; i++) {
 		if (entities[i] != 0) {
-			if (entities[i]->getIsPlayerCharacter() == playerIdentifier) {
+			if (entities[i]->getIsPlayerCharacter() == playerIdentifier && entities[i]->getIsOwnPlayer() == 0) {
 				playerCount++;
 				//cout << "some player found at: 0x" << hex << entities[i] << endl;
 			}
 		}
 	}
 
-	return playerCount > 1;
+	return playerCount > 0;
 }
 
 Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
@@ -77,6 +117,7 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 	}
 
 	cout << "[i] I found " << dec << stoneCount << " stones." << endl;
+	cout << "[i] Closest stone is " << dec << distanceToClosestStone << " units away from us." << endl;
 
 	return closestMetinStone;
 }

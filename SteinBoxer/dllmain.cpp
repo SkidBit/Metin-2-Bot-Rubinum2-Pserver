@@ -20,24 +20,13 @@ bool freezeWhenPlayersPresent = true;
 bool firstLoop = true;
 bool shutdown = false;
 
-DWORD WINAPI MainThread(LPVOID param) {
+Vector3 anchorPosition = Vector3{ 0,0,0 };
 
-	typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
-	__pickupCloseFunc pickupCloseFunc;
+DWORD WINAPI MainThread(LPVOID param) {
 
 	baseAdressMainMod = (uintptr_t)GetModuleHandle(NULL);
 	cout << "-----DEBUGGING-----" << endl;
 	cout << "Main module base address: 0x" << hex << baseAdressMainMod << endl;
-
-	uintptr_t pickupFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionPattern, (char*)pickupFunctionMask, "rbclient.exe");
-	uintptr_t pickupFunctionClassPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionClassPointerFunctionPattern, (char*)pickupFunctionClassPointerFunctionMask, "rbclient.exe");
-
-	cout << "Pickup function address: 0x" << hex << pickupFunctionAddress << endl;
-	cout << "Pickup classpointer function address: 0x" << hex << pickupFunctionClassPointerFunctionAddress << endl;
-
-	uintptr_t pickupFunctionClassPointer = *(uintptr_t*)(pickupFunctionClassPointerFunctionAddress + pickupFunctionOffsetToClassPointer);
-
-	cout << "Pickup classpointer address: 0x" << hex << pickupFunctionClassPointer << endl;
 
 	editEntityFunctionAddress = (uintptr_t)mem::ScanModIn((char*)editEntityFunctionPattern, (char*)editEntityFunctionMask, "rbclient.exe");
 
@@ -47,10 +36,9 @@ DWORD WINAPI MainThread(LPVOID param) {
 	originalBytesEntiyEditFunction = mem::detour32((void*)editEntityFunctionAddress, entityHook, 8);
 
 	cout << "-----DEBUGGING-----" << endl;
-	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
+
 	// pickupCloseFunc(*(void**)0x020F8528);
 
-	Vector3 anchorPosition = Vector3{ 0,0,0 };
 	Entity* closestStone;
 	chrono::steady_clock::time_point timerStart;
 	chrono::steady_clock::time_point timerRound;
@@ -66,6 +54,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 		// check if bot enabled
 		if (botRunning) {
 
+			// check if game is fully loaded and player entity is accessible
 			if (firstLoop) {
 				cout << "[i] FirstLoop setup is run..." << endl;
 				// enable wallhack
@@ -78,15 +67,28 @@ DWORD WINAPI MainThread(LPVOID param) {
 				firstLoop = false;
 			}
 
+
+			// TODO: pickup loot if freeze is activated during stone killing
 			if (!(freezeWhenPlayersPresent && game::areOtherPlayersPresent())) {
 
 				if (!game::isPlayerAttackingMob()) {
+					// short sleep before collecting items so we don't insta-pickup
 					Sleep(1000);
-					// pickup and wait for short amount
-					pickupCloseFunc(*(void**)pickupFunctionClassPointer);
+					game::pickupItems();
 					cout << "[i] Picked up loot" << endl;
-					// sleeps are neccessary because stone will be read as alive short time after death
+					// dead entities are not instantly remove from the enity list so we need to wait
+					// some time for the game to update, so we don't spam attack the same (dead) entity
 					Sleep(3000);
+
+					// this is a small hack to avoid invalid anchors if the player ported during the sleep above
+					if (firstLoop) {
+						while (game::getPlayerEntity() == 0) {
+							Sleep(500);
+						}
+						// set new anchor after porting
+						anchorPosition = game::getPlayerEntity()->getPosition();
+						cout << "[i] Anchor position >after loadscreen< set to " << anchorPosition.x << " / " << anchorPosition.y << endl;
+					}
 
 					// get closest stone
 					closestStone = game::getClosestMetinStone(anchorPosition);
@@ -109,11 +111,33 @@ DWORD WINAPI MainThread(LPVOID param) {
 				cout << "[i] Freeze active and players present. Waiting..." << endl;
 				Sleep(1000);
 			}
-		}
 
-		Sleep(1);
+
+
+		}
+		Sleep(25);
 	}
-	cout << "main thread exiting" << endl;
+	cout << "[i] Main thread exiting" << endl;
+	return 0;
+}
+
+DWORD WINAPI FlushThread(LPVOID param) {
+	while (!shutdown) {
+		if (game::getPlayerEntity() == 0) {
+
+			// we need to run firstloop again for setup after playerent was null
+			firstLoop = true;
+
+			cout << "[i] PlayerEnt is NULL" << endl;
+			// flush entity array to get rid of broken entity entries after teleporting etc.
+			game::flushEntityArray();
+			// Sleep to not spam the function
+			Sleep(500);
+		}
+		Sleep(25);
+
+	}
+	cout << "[i] Flush thread exiting" << endl;
 	return 0;
 }
 
@@ -150,6 +174,7 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
 
 			shutdown = true;
+			// give other Threads some time to shutdown
 			Sleep(5000);
 		}
 
@@ -183,6 +208,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		DisableThreadLibraryCalls((HMODULE)hModule);
 		CreateThread(nullptr, 0, MainThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, ControlsThread, hModule, 0, 0);
+		CreateThread(nullptr, 0, FlushThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 

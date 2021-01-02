@@ -12,4 +12,7 @@ namespace game {
 	void resetPlayerAtatck();
 	Entity* getPlayerEntity();
 	bool areOtherPlayersPresent();
+	void pickupItems();
+	void initializePickupFunctionAddresses();
+	void flushEntityArray();
 }
