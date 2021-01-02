@@ -10,7 +10,7 @@ void console(LPVOID hModule) { //console assignment
 
 		AttachConsole(GetProcessId((hModule)));
 
-		SetConsoleTitle(L"SteinBoxer v1.2");
+		SetConsoleTitle(L"SteinBoxer v1.4");
 
 		// disable close button
 		EnableMenuItem(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE, MF_DISABLED);
