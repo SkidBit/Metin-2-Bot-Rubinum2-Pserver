@@ -15,4 +15,6 @@ namespace game {
 	void pickupItems();
 	void initializePickupFunctionAddresses();
 	void flushEntityArray();
+	float getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity);
+	float getDistanceBetweenEntityAndVec3(Entity* entity, Vector3 anchorPosition);
 }

@@ -88,7 +88,6 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 	Entity* closestMetinStone = nullptr;
 	float distanceToClosestStone = INFINITY;
 	int tempMobId;
-	Vector3 tempMobPos;
 	float tempDistanceToClosestStone;
 	int stoneCount = 0;
 
@@ -103,16 +102,14 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 				//cout << "Stone found, mobID: " << dec << tempMobId << endl;
 				//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
 				stoneCount++;
-				tempMobPos = entities[i]->getPosition();
-				//calculate distance to anchor position
-				tempDistanceToClosestStone = sqrt(pow(anchorPosition.x - tempMobPos.x, 2) + pow(anchorPosition.y - tempMobPos.y, 2));
-				//cout << "Distance to stone: " << dec << tempDistanceToClosestStone << endl;
+
+				tempDistanceToClosestStone = game::getDistanceBetweenEntityAndVec3(entities[i], anchorPosition);
+				cout << "Distance to stone: " << dec << tempDistanceToClosestStone << endl;
 				if (tempDistanceToClosestStone < distanceToClosestStone) {
 					distanceToClosestStone = tempDistanceToClosestStone;
 					closestMetinStone = entities[i];
 				}
 			}
-
 		}
 	}
 
@@ -120,6 +117,14 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 	cout << "[i] Closest stone is " << dec << distanceToClosestStone << " units away from us." << endl;
 
 	return closestMetinStone;
+}
+
+float game::getDistanceBetweenEntityAndVec3(Entity* entity, Vector3 anchorPosition) {
+	return sqrt(pow(entity->getPosition().x - anchorPosition.x, 2) + pow(entity->getPosition().y - anchorPosition.y, 2));
+}
+
+float game::getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity) {
+	return sqrt(pow(firstEntity->getPosition().x - secondEntity->getPosition().x, 2) + pow(firstEntity->getPosition().y - secondEntity->getPosition().y, 2));
 }
 
 void game::enableWallhack() {

@@ -39,7 +39,8 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 	// pickupCloseFunc(*(void**)0x020F8528);
 
-	Entity* closestStone;
+	Entity* closestStoneToAnchor;
+	Entity* closestStoneToPlayer;
 	chrono::steady_clock::time_point timerStart;
 	chrono::steady_clock::time_point timerRound;
 
@@ -90,13 +91,22 @@ DWORD WINAPI MainThread(LPVOID param) {
 						cout << "[i] Anchor position >after loadscreen< set to " << anchorPosition.x << " / " << anchorPosition.y << endl;
 					}
 
-					// get closest stone
-					closestStone = game::getClosestMetinStone(anchorPosition);
-					// attack stone
-					game::playerAttackMobWithUid(closestStone);
+					closestStoneToAnchor = game::getClosestMetinStone(anchorPosition);
+					closestStoneToPlayer = game::getClosestMetinStone(game::getPlayerEntity()->getPosition());
+
+					if (game::getDistanceBetweenEntities(game::getPlayerEntity(), closestStoneToPlayer) < distanceToPreferClosestStone) {
+						// if very close to stone attack that one instead of closest to anchor
+						game::playerAttackMobWithUid(closestStoneToPlayer);
+						cout << "[i] Player is close to a stone, prefering that one over the one closest to anchor." << endl;
+					}
+					else {
+						// attack closest to anchor
+						game::playerAttackMobWithUid(closestStoneToAnchor);
+					}
+
 					// start timing to detect attackid bug
 					timerStart = chrono::steady_clock::now();
-					cout << "[i] Attacking Stone with mobID: " << dec << closestStone->getMobId() << " and Uid of: " << closestStone->getUid() << endl;
+					cout << "[i] Attacking Stone with mobID: " << dec << closestStoneToAnchor->getMobId() << " and Uid of: " << closestStoneToAnchor->getUid() << endl;
 				}
 
 				timerRound = chrono::steady_clock::now();
@@ -112,8 +122,6 @@ DWORD WINAPI MainThread(LPVOID param) {
 				Sleep(1000);
 			}
 
-
-
 		}
 		Sleep(25);
 	}
@@ -122,12 +130,11 @@ DWORD WINAPI MainThread(LPVOID param) {
 }
 
 DWORD WINAPI FlushThread(LPVOID param) {
+
 	while (!shutdown) {
 		if (game::getPlayerEntity() == 0) {
-
 			// we need to run firstloop again for setup after playerent was null
 			firstLoop = true;
-
 			cout << "[i] PlayerEnt is NULL" << endl;
 			// flush entity array to get rid of broken entity entries after teleporting etc.
 			game::flushEntityArray();

@@ -25,7 +25,7 @@ public:
 	char pad_0464[5400]; //0x0464
 	int32_t uid; //0x197C
 
-	Vector3 getPosition() { CHECK_BAD_VEC3(Entity); position.y = position.y * -1; return position; };
+	Vector3 getPosition() { CHECK_BAD_VEC3(Entity); return position; };
 	int32_t getIsPlayerCharacter() { CHECK_BAD_NUM(Entity); return isPlayerCharacter; };
 	int32_t getIsRendered() { CHECK_BAD_NUM(Entity); return isRendered; };
 	void setIsRendered(int32_t value) { CHECK_BAD(Entity); isRendered = value; };
@@ -54,8 +54,9 @@ const uintptr_t offsetWallHackTwo = 0x1C5C;
 //ids
 const int metinIdStart = 8000;
 const int metinIdEnd = 8112;
-
 const int playerIdentifier = 0x3F800000;
+
+const int distanceToPreferClosestStone = 1000;
 
 //globals
 extern uintptr_t baseAdressMainMod;
