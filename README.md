@@ -14,8 +14,6 @@ How to use:
 4. Press F1 to start/pause the bot (the bot will take a moment to get started)
 5. To completely shut down and remove the bot, press INSERT
 
-You should pause the bot before porting or entering cities etc. it shouldn't crash but just do it to be safe.
-
 How it works:
 When started the bot gets the player position and sets that position as an anchor for all the
 following distance calculation to metin stones. The bot also enables the "SkipCollision" function.
