@@ -62,6 +62,7 @@ void game::initializePickupFunctionAddresses() {
 	pickupFunctionAddressesInitialized = true;
 }
 
+
 void game::pickupItems() {
 
 	if (!pickupFunctionAddressesInitialized) {
@@ -152,41 +153,11 @@ float game::getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity
 }
 
 void game::enableWallhack() {
-
-	uintptr_t firstValueAddress = (uintptr_t)mem::ScanModIn((char*)whFirstValueForAdditionPattern, (char*)whFirstValueForAdditionMask, "rbclient.exe");
-	firstValueAddress = firstValueAddress + whFirstValueOffsetToValue;
-	unsigned int firstValue = *(int*)firstValueAddress;
-
-	uintptr_t secondValueAddress = (uintptr_t)mem::ScanModIn((char*)whSecondValueForAdditionPattern, (char*)whSecondValueForAdditionMask, "rbclient.exe");
-	secondValueAddress = secondValueAddress + whSecondValueOffsetToValue;
-	unsigned int secondValue = *(int*)secondValueAddress;
-
-	uintptr_t whBaseAddress = (uintptr_t)mem::ScanModIn((char*)whBaseAddressPattern, (char*)whBaseAddressMask, "rbclient.exe");
-	whBaseAddress = *(uintptr_t*)(whBaseAddress + whBaseAddressOffsetToValue);
-
-	BYTE* wallHackAddress = (BYTE*)mem::findDMAAddy(whBaseAddress, { 0xC, firstValue + secondValue });
-	if (!mem::IsBadReadPtr(wallHackAddress)) {
-		*wallHackAddress = 0x1;
-	}
+	game::getPlayerEntity()->enableSkipCollision();
 }
 
 void game::disableWallhack() {
-
-	uintptr_t firstValueAddress = (uintptr_t)mem::ScanModIn((char*)whFirstValueForAdditionPattern, (char*)whFirstValueForAdditionMask, "rbclient.exe");
-	firstValueAddress = firstValueAddress + whFirstValueOffsetToValue;
-	unsigned int firstValue = *(int*)firstValueAddress;
-
-	uintptr_t secondValueAddress = (uintptr_t)mem::ScanModIn((char*)whSecondValueForAdditionPattern, (char*)whSecondValueForAdditionMask, "rbclient.exe");
-	secondValueAddress = secondValueAddress + whSecondValueOffsetToValue;
-	unsigned int secondValue = *(int*)secondValueAddress;
-
-	uintptr_t whBaseAddress = (uintptr_t)mem::ScanModIn((char*)whBaseAddressPattern, (char*)whBaseAddressMask, "rbclient.exe");
-	whBaseAddress = *(uintptr_t*)(whBaseAddress + whBaseAddressOffsetToValue);
-
-	BYTE* wallHackAddress = (BYTE*)mem::findDMAAddy(whBaseAddress, { 0xC, firstValue + secondValue });
-	if (!mem::IsBadReadPtr(wallHackAddress)) {
-		*wallHackAddress = 0x0;
-	}
+	game::getPlayerEntity()->disableSkipCollision();
 }
 
 void game::resetPlayerAtatck() {

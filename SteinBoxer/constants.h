@@ -24,7 +24,13 @@ public:
 	int32_t isOwnPlayer; //0x0460 1 if own 0 else
 	char pad_0464[5400]; //0x0464
 	int32_t uid; //0x197C
+	char pad_1980[4]; //0x1980
+	int8_t skipCollision; //0x1984
+	char pad_1985[707]; //0x1985
 
+	void disableSkipCollision() { CHECK_BAD(Entity); skipCollision = 0x0; };
+	void enableSkipCollision() { CHECK_BAD(Entity); skipCollision = 0x1; };
+	int8_t getSkipCollision() { CHECK_BAD_NUM(Entity); return skipCollision; };
 	Vector3 getPosition() { CHECK_BAD_VEC3(Entity); return position; };
 	int32_t getIsPlayerCharacter() { CHECK_BAD_NUM(Entity); return isPlayerCharacter; };
 	int32_t getIsRendered() { CHECK_BAD_NUM(Entity); return isRendered; };
@@ -69,18 +75,6 @@ inline const BYTE cPythonPlayerSingletonPointerOffsetToClassPointer = 0x2;
 // should be unique in the main module
 inline const char* editEntityFunctionPattern = "\xF3\x0F\x00\x00\x00\x00\x00\x00\xFF\xB6";
 inline const char* editEntityFunctionMask = "xx??????xx";
-
-inline const char* whFirstValueForAdditionPattern = "\x56\x8B\xF1\xE8\x00\x00\x00\x00\x84\xC0\x74\x00\x68";
-inline const char* whFirstValueForAdditionMask = "xxxx????xxx?x";
-inline const uintptr_t whFirstValueOffsetToValue = 0x1D;
-
-inline const char* whSecondValueForAdditionPattern = "\xC6\x81\x84\x19\x00\x00\x00\xC3\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\x55\x8B\xEC\x8B\x45";
-inline const char* whSecondValueForAdditionMask = "xxxxxx?xxxxxxxxxxxxxx";
-inline const uintptr_t whSecondValueOffsetToValue = 0x2;
-
-inline const char* whBaseAddressPattern = "\x8B\x0D\x00\x00\x00\x00\xE9\x00\x00\x00\x00\xCC\xCC\xCC\xCC\xCC\x8B\x0D\x00\x00\x00\x00\xE9\x00\x00\x00\x00\xCC\xCC\xCC\xCC\xCC\x8B\xD1";
-inline const char* whBaseAddressMask = "xx????x????xxxxxxx????x????xxxxxxx";
-inline const uintptr_t whBaseAddressOffsetToValue = 0x2;
 
 inline const char* attackEntityPattern = "\x55\x8B\xEC\x8B\x45\x00\x89\x41\x00\x5D\xC2\x00\x00\xCC\xCC\xCC\x55\x8B\xEC\x51\x53\x56\x57\x8B\xF9\x8B\x47\x00\x8D\x4F";
 inline const char* attackEntityMask = "xxxxx?xx?xx??xxxxxxxxxxxxxx?xx";
