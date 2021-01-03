@@ -12,7 +12,6 @@ bool cPythonPlayerSingletonInitialized = false;
 uintptr_t cPythonPlayerSingletonPointerFunctionAddress;
 uintptr_t cPythonPlayerSingletonPointer;
 
-
 bool attackEntityAddressInitialized = false;
 typedef void(__thiscall* __attackEntityFunc)(void* classPointer, DWORD VID);
 __attackEntityFunc attackEntityFunc;
@@ -26,9 +25,7 @@ void game::initializeCpythonPlayerSingleton() {
 
 void game::initializeAttackEntityFunctionAddresses() {
 	attackEntityAddress = (uintptr_t)mem::ScanModIn((char*)attackEntityPattern, (char*)attackEntityMask, "rbclient.exe");
-
 	attackEntityFunc = (__attackEntityFunc)(attackEntityAddress);
-
 	attackEntityAddressInitialized = true;
 }
 
@@ -61,9 +58,7 @@ void game::attackEntity(Entity* entity) {
 
 void game::initializePickupFunctionAddresses() {
 	pickupFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionPattern, (char*)pickupFunctionMask, "rbclient.exe");
-
 	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
-
 	pickupFunctionAddressesInitialized = true;
 }
 
@@ -75,7 +70,6 @@ void game::pickupItems() {
 	if (!cPythonPlayerSingletonInitialized) {
 		game::initializeCpythonPlayerSingleton();
 	}
-
 	pickupCloseFunc(*(void**)cPythonPlayerSingletonPointer);
 }
 
@@ -110,7 +104,6 @@ bool game::areOtherPlayersPresent() {
 			}
 		}
 	}
-
 	return playerCount > 0;
 }
 
@@ -122,7 +115,6 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 	int tempMobId;
 	float tempDistanceToClosestStone;
 	int stoneCount = 0;
-
 
 	for (int i = 0; i < 255; i++) {
 		if (entities[i] != 0) {
@@ -176,7 +168,6 @@ void game::enableWallhack() {
 	if (!mem::IsBadReadPtr(wallHackAddress)) {
 		*wallHackAddress = 0x1;
 	}
-
 }
 
 void game::disableWallhack() {
