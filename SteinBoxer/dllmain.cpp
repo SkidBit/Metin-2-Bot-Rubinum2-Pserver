@@ -43,7 +43,6 @@ DWORD WINAPI MainThread(LPVOID param) {
 	Entity* closestStoneToAnchor;
 	Entity* closestStoneToPlayer;
 
-
 	cout << "" << endl;
 	cout << "[i] F1 to toggle bot" << endl;
 	cout << "[i] F2 to toggle freeze option, default value is ON" << endl;
@@ -154,6 +153,20 @@ DWORD WINAPI FlushThread(LPVOID param) {
 	return 0;
 }
 
+DWORD WINAPI WallhackTestThread(LPVOID param) {
+
+	while (!shutdown) {
+		if (wallhack) {
+			if (game::getPlayerEntity()->getSkipCollision() == 0) {
+				game::getPlayerEntity()->enableSkipCollision();
+			}
+		}
+		Sleep(100);
+	}
+	cout << "[i] WallhackTestThread thread exiting" << endl;
+	return 0;
+}
+
 DWORD WINAPI ControlsThread(LPVOID param) {
 	while (!shutdown) {
 
@@ -249,6 +262,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		CreateThread(nullptr, 0, ControlsThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, FlushThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, PickupSpamThread, hModule, 0, 0);
+		CreateThread(nullptr, 0, WallhackTestThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 
