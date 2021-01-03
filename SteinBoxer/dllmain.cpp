@@ -20,8 +20,10 @@ bool freezeWhenPlayersPresent = true;
 bool firstLoop = true;
 bool shutdown = false;
 bool pickupSpam = false;
+bool wallhack = false;
 
 Vector3 anchorPosition = Vector3{ 0,0,0 };
+Entity* attackedStone = 0;
 
 DWORD WINAPI MainThread(LPVOID param) {
 
@@ -38,17 +40,15 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 	cout << "-----DEBUGGING-----" << endl;
 
-	// pickupCloseFunc(*(void**)0x020F8528);
-
 	Entity* closestStoneToAnchor;
 	Entity* closestStoneToPlayer;
-	chrono::steady_clock::time_point timerStart;
-	chrono::steady_clock::time_point timerRound;
+
 
 	cout << "" << endl;
 	cout << "[i] F1 to toggle bot" << endl;
 	cout << "[i] F2 to toggle freeze option, default value is ON" << endl;
 	cout << "[i] F3 to toggle pickup spam, default value is OFF" << endl;
+	cout << "[i] F4 to manually toggle wallhack" << endl;
 	cout << "[i] INSERT to shutdown bot and eject DLL" << endl;
 
 	while (!shutdown) {
@@ -62,6 +62,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 				cout << "[i] FirstLoop setup is run..." << endl;
 				// enable wallhack
 				game::enableWallhack();
+				wallhack = true;
 				cout << "[i] WH enabled" << endl;
 				// get Anchor position
 				anchorPosition = game::getPlayerEntity()->getPosition();
@@ -73,50 +74,39 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 			// TODO: pickup loot if freeze is activated during stone killing
 			if (!(freezeWhenPlayersPresent && game::areOtherPlayersPresent())) {
+				// check if we selected a stone to attack
+				if (attackedStone != 0) {
+					// mob is dead now
+					if (attackedStone->getMobIsDead() == 1) {
+						Sleep(1000);
+						game::pickupItems();
+						cout << "[i] Picked up loot" << endl;
+						// dead entities are not instantly remove from the enity list so we need to wait
+						// some time for the game to update, so we don't spam attack the same (dead) entity
+						Sleep(3000);
 
-				if (!game::isPlayerAttackingMob()) {
-					// short sleep before collecting items so we don't insta-pickup
-					Sleep(1000);
-					game::pickupItems();
-					cout << "[i] Picked up loot" << endl;
-					// dead entities are not instantly remove from the enity list so we need to wait
-					// some time for the game to update, so we don't spam attack the same (dead) entity
-					Sleep(3000);
-
-					// this is a small hack to avoid invalid anchors if the player ported during the sleep above
-					if (firstLoop) {
-						while (game::getPlayerEntity() == 0) {
-							Sleep(500);
-						}
-						// set new anchor after porting
-						anchorPosition = game::getPlayerEntity()->getPosition();
-						cout << "[i] Anchor position >after loadscreen< set to " << anchorPosition.x << " / " << anchorPosition.y << endl;
+						attackedStone = 0;
 					}
-
+				}
+				else {
 					closestStoneToAnchor = game::getClosestMetinStone(anchorPosition);
 					closestStoneToPlayer = game::getClosestMetinStone(game::getPlayerEntity()->getPosition());
 
+					cout << "CLOSEST TO PLAYER " << hex << closestStoneToPlayer << endl;
+
 					if (game::getDistanceBetweenEntities(game::getPlayerEntity(), closestStoneToPlayer) < distanceToPreferClosestStone) {
+						attackedStone = closestStoneToPlayer;
 						// if very close to stone attack that one instead of closest to anchor
-						game::playerAttackMobWithUid(closestStoneToPlayer);
+						//game::playerAttackMobWithUid(closestStoneToPlayer);
+						game::attackEntity(closestStoneToPlayer);
 						cout << "[i] Player is close to a stone, prefering that one over the one closest to anchor." << endl;
 					}
 					else {
+						attackedStone = closestStoneToAnchor;
 						// attack closest to anchor
-						game::playerAttackMobWithUid(closestStoneToAnchor);
+						//game::playerAttackMobWithUid(closestStoneToAnchor);
+						game::attackEntity(closestStoneToAnchor);
 					}
-
-					// start timing to detect attackid bug
-					timerStart = chrono::steady_clock::now();
-					cout << "[i] Attacking Stone with mobID: " << dec << closestStoneToAnchor->getMobId() << " and Uid of: " << closestStoneToAnchor->getUid() << endl;
-				}
-
-				timerRound = chrono::steady_clock::now();
-
-				if (chrono::duration_cast<chrono::seconds>(timerRound - timerStart).count() > 60) {
-					// 60 seconds ago we started attacking and stone still lives, game is buggy
-					game::resetPlayerAtatck();
-					cout << "[!] Game bugged out, reset issued" << endl;
 				}
 			}
 			else {
@@ -174,7 +164,9 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 			}
 			else {
 				cout << "[->] BOT OFF" << endl;
+				attackedStone = 0;
 				game::disableWallhack();
+				wallhack = false;
 				cout << "[i] WH disabled" << endl;
 				firstLoop = true;
 			}
@@ -203,6 +195,20 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 			Sleep(200);
 		}
 
+		if (GetAsyncKeyState(VK_F4) & 1) {
+			wallhack = !wallhack;
+			if (wallhack) {
+				cout << "[->] WALLHACK ON" << endl;
+				game::enableWallhack();
+			}
+			else {
+				cout << "[->] WALLHACK OFF" << endl;
+				game::disableWallhack();
+			}
+			Sleep(200);
+		}
+
+
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
 
 			shutdown = true;
@@ -217,6 +223,7 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 	mem::restoreBytes((void*)editEntityFunctionAddress, originalBytesEntiyEditFunction);
 	// disable wallhack
 	game::disableWallhack();
+	cout << "[i] WH disabled" << endl;
 
 	cout << "[i] GOODBYE, BOT TERMINATING NOW" << endl;
 	Sleep(1000);

@@ -6,22 +6,61 @@ using namespace std;
 typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
 bool pickupFunctionAddressesInitialized = false;
 uintptr_t pickupFunctionAddress;
-uintptr_t pickupFunctionClassPointerFunctionAddress;
-uintptr_t pickupFunctionClassPointer;
 __pickupCloseFunc pickupCloseFunc;
+
+bool cPythonPlayerSingletonInitialized = false;
+uintptr_t cPythonPlayerSingletonPointerFunctionAddress;
+uintptr_t cPythonPlayerSingletonPointer;
+
+
+bool attackEntityAddressInitialized = false;
+typedef void(__thiscall* __attackEntityFunc)(void* classPointer, DWORD VID);
+__attackEntityFunc attackEntityFunc;
+uintptr_t attackEntityAddress;
+
+void game::initializeCpythonPlayerSingleton() {
+	cPythonPlayerSingletonPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)cPythonPlayerSingletonPointerFunctionPattern, (char*)cPythonPlayerSingletonPointerFunctionMask, "rbclient.exe");
+	cPythonPlayerSingletonPointer = *(uintptr_t*)(cPythonPlayerSingletonPointerFunctionAddress + cPythonPlayerSingletonPointerOffsetToClassPointer);
+	cPythonPlayerSingletonInitialized = true;
+}
+
+void game::initializeAttackEntityFunctionAddresses() {
+	attackEntityAddress = (uintptr_t)mem::ScanModIn((char*)attackEntityPattern, (char*)attackEntityMask, "rbclient.exe");
+
+	attackEntityFunc = (__attackEntityFunc)(attackEntityAddress);
+
+	attackEntityAddressInitialized = true;
+}
+
+void game::attackVID(DWORD VID) {
+
+	if (!attackEntityAddressInitialized) {
+		game::initializeAttackEntityFunctionAddresses();
+	}
+	if (!cPythonPlayerSingletonInitialized) {
+		game::initializeCpythonPlayerSingleton();
+	}
+
+	attackEntityFunc(*(void**)cPythonPlayerSingletonPointer, VID);
+}
+
+void game::attackEntity(Entity* entity) {
+
+	if (!attackEntityAddressInitialized) {
+		game::initializeAttackEntityFunctionAddresses();
+	}
+	if (!cPythonPlayerSingletonInitialized) {
+		game::initializeCpythonPlayerSingleton();
+	}
+
+	// otherwise we can't attack mobs outside of our vision
+	entity->setIsRendered(0x1);
+
+	attackEntityFunc(*(void**)cPythonPlayerSingletonPointer, entity->getUid());
+}
 
 void game::initializePickupFunctionAddresses() {
 	pickupFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionPattern, (char*)pickupFunctionMask, "rbclient.exe");
-	pickupFunctionClassPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionClassPointerFunctionPattern, (char*)pickupFunctionClassPointerFunctionMask, "rbclient.exe");
-
-	cout << "-----DEBUGGING-----" << endl;
-	cout << "Pickup function address: 0x" << hex << pickupFunctionAddress << endl;
-	cout << "Pickup classpointer function address: 0x" << hex << pickupFunctionClassPointerFunctionAddress << endl;
-
-	pickupFunctionClassPointer  = *(uintptr_t*)(pickupFunctionClassPointerFunctionAddress + pickupFunctionOffsetToClassPointer);
-
-	cout << "Pickup classpointer address: 0x" << hex << pickupFunctionClassPointer << endl;
-	cout << "-----DEBUGGING-----" << endl;
 
 	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
 
@@ -33,8 +72,11 @@ void game::pickupItems() {
 	if (!pickupFunctionAddressesInitialized) {
 		game::initializePickupFunctionAddresses();
 	}
+	if (!cPythonPlayerSingletonInitialized) {
+		game::initializeCpythonPlayerSingleton();
+	}
 
-	pickupCloseFunc(*(void**)pickupFunctionClassPointer);
+	pickupCloseFunc(*(void**)cPythonPlayerSingletonPointer);
 }
 
 void game::flushEntityArray() {
@@ -55,16 +97,6 @@ Entity* game::getPlayerEntity() {
 	return 0;
 }
 
-bool game::isPlayerAttackingMob() {
-	int* mobUidAddress = (int*)mem::findDMAAddy(baseAdressMainMod + offsetToPlayerControlObject, { offsetToAttackUID });
-
-	if (mem::IsBadReadPtr(mobUidAddress)) {
-		return 0;
-	}
-
-	//cout << "Checking if player is attacking something. Value: " << std::dec << mobUid << endl;
-	return *mobUidAddress != 0;
-}
 
 bool game::areOtherPlayersPresent() {
 
@@ -128,7 +160,19 @@ float game::getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity
 }
 
 void game::enableWallhack() {
-	BYTE* wallHackAddress = (BYTE*)mem::findDMAAddy(baseAdressMainMod + offsetWallHackBase, { offsetWallHackOne, offsetWallHackTwo });
+
+	uintptr_t firstValueAddress = (uintptr_t)mem::ScanModIn((char*)whFirstValueForAdditionPattern, (char*)whFirstValueForAdditionMask, "rbclient.exe");
+	firstValueAddress = firstValueAddress + whFirstValueOffsetToValue;
+	unsigned int firstValue = *(int*)firstValueAddress;
+
+	uintptr_t secondValueAddress = (uintptr_t)mem::ScanModIn((char*)whSecondValueForAdditionPattern, (char*)whSecondValueForAdditionMask, "rbclient.exe");
+	secondValueAddress = secondValueAddress + whSecondValueOffsetToValue;
+	unsigned int secondValue = *(int*)secondValueAddress;
+
+	uintptr_t whBaseAddress = (uintptr_t)mem::ScanModIn((char*)whBaseAddressPattern, (char*)whBaseAddressMask, "rbclient.exe");
+	whBaseAddress = *(uintptr_t*)(whBaseAddress + whBaseAddressOffsetToValue);
+
+	BYTE* wallHackAddress = (BYTE*)mem::findDMAAddy(whBaseAddress, { 0xC, firstValue + secondValue });
 	if (!mem::IsBadReadPtr(wallHackAddress)) {
 		*wallHackAddress = 0x1;
 	}
@@ -136,30 +180,24 @@ void game::enableWallhack() {
 }
 
 void game::disableWallhack() {
-	BYTE* wallHackAddress = (BYTE*)mem::findDMAAddy(baseAdressMainMod + offsetWallHackBase, { offsetWallHackOne, offsetWallHackTwo });
+
+	uintptr_t firstValueAddress = (uintptr_t)mem::ScanModIn((char*)whFirstValueForAdditionPattern, (char*)whFirstValueForAdditionMask, "rbclient.exe");
+	firstValueAddress = firstValueAddress + whFirstValueOffsetToValue;
+	unsigned int firstValue = *(int*)firstValueAddress;
+
+	uintptr_t secondValueAddress = (uintptr_t)mem::ScanModIn((char*)whSecondValueForAdditionPattern, (char*)whSecondValueForAdditionMask, "rbclient.exe");
+	secondValueAddress = secondValueAddress + whSecondValueOffsetToValue;
+	unsigned int secondValue = *(int*)secondValueAddress;
+
+	uintptr_t whBaseAddress = (uintptr_t)mem::ScanModIn((char*)whBaseAddressPattern, (char*)whBaseAddressMask, "rbclient.exe");
+	whBaseAddress = *(uintptr_t*)(whBaseAddress + whBaseAddressOffsetToValue);
+
+	BYTE* wallHackAddress = (BYTE*)mem::findDMAAddy(whBaseAddress, { 0xC, firstValue + secondValue });
 	if (!mem::IsBadReadPtr(wallHackAddress)) {
 		*wallHackAddress = 0x0;
 	}
 }
 
-void game::playerAttackMobWithUid(Entity* mobEntity) {
-
-	// make mob visible
-	mobEntity->setIsRendered(0x1);
-
-	// attack mob
-	int* attackMobAddress = (int*)mem::findDMAAddy(baseAdressMainMod + offsetToPlayerControlObject, { offsetToAttackUID });
-	if (!mem::IsBadReadPtr(attackMobAddress)) {
-		*attackMobAddress = mobEntity->getUid();
-	}
-}
-
-
 void game::resetPlayerAtatck() {
-
-	int* playerAttackAddress = (int*)mem::findDMAAddy(baseAdressMainMod + offsetToPlayerControlObject, { offsetToAttackUID });
-
-	if (!mem::IsBadReadPtr(playerAttackAddress)) {
-		*playerAttackAddress = 0x0;
-	}
+	game::attackVID(0);
 }

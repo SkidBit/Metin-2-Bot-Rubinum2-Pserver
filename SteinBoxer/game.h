@@ -4,11 +4,9 @@
 #include "constants.h"
 
 namespace game {
-	bool isPlayerAttackingMob();
 	Entity* getClosestMetinStone(Vector3 anchorPosition);
 	void enableWallhack();
 	void disableWallhack();
-	void playerAttackMobWithUid(Entity* mobEntity);
 	void resetPlayerAtatck();
 	Entity* getPlayerEntity();
 	bool areOtherPlayersPresent();
@@ -17,4 +15,8 @@ namespace game {
 	void flushEntityArray();
 	float getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity);
 	float getDistanceBetweenEntityAndVec3(Entity* entity, Vector3 anchorPosition);
+	void initializeAttackEntityFunctionAddresses();
+	void attackEntity(Entity* entity);
+	void attackVID(DWORD VID);
+	void initializeCpythonPlayerSingleton();
 }
