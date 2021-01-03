@@ -37,8 +37,11 @@ public:
 
 
 //ids
-const int metinIdStart = 8000;
-const int metinIdEnd = 8112;
+const int metinIdStart = 8001;
+const int metinIdEnd = 8416;
+const int oreIdStart = 30301;
+const int oreIdEnd = 30306;
+
 const int playerIdentifier = 0x3F800000;
 
 const int distanceToPreferClosestStone = 2000;

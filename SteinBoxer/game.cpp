@@ -122,13 +122,13 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 			tempMobId = entities[i]->getMobId();
 
 			// check if mob is metin stone
-			if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd) {
+			if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd || tempMobId >= oreIdStart && tempMobId <= oreIdEnd) {
 				//cout << "Stone found, mobID: " << dec << tempMobId << endl;
 				//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
 				stoneCount++;
 
 				tempDistanceToClosestStone = game::getDistanceBetweenEntityAndVec3(entities[i], anchorPosition);
-				cout << "Distance to stone: " << dec << tempDistanceToClosestStone << endl;
+				cout << "Distance to stone/ore: " << dec << tempDistanceToClosestStone << endl;
 				if (tempDistanceToClosestStone < distanceToClosestStone) {
 					distanceToClosestStone = tempDistanceToClosestStone;
 					closestMetinStone = entities[i];
