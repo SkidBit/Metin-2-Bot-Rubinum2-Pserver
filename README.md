@@ -16,10 +16,10 @@ How to use:
 
 How it works:
 When started the bot gets the player position and sets that position as an anchor for all the
-following distance calculation to metin stones. The bot also enables the "SkipCollision" function.
-This is done to avoid getting stuck on mobs or terrain. Then the bot looks for the closest stone, sets the
-"isVisible" bit and writes the UID of the metin stone to a location that makes the player move to
-and attack the stone. After the stone is dead the "pickUpCloseItems" function is called via a "thiscall" function call.
+following distance calculation to metin stones. If the bot is really close to a stone he will prefer that stone
+over the stone that is closest to the anchor to avoid a "ping pong" behaviour.
+The bot also enables wallhack to avoid getting stuck on terrain and/or mobs.
+After the stone died that the bot had as a target, it will collect items and search for a new target.
 
 Big thanks to Rake and all the others at GuidedHacking for their guides and the DLL template.
 And Thanks to the x64dbg project for the ntdll https://github.com/x64dbg/x64dbg.
