@@ -8,6 +8,23 @@
 
 struct Vector3 { float x, y, z; };
 
+class Player
+{
+public:
+	char pad_0000[732]; //0x0000
+	Vector3 position; //0x02DC
+	char pad_02E8[1016]; //0x02E8
+	int32_t attackStance; //0x06E0
+	char pad_06E4[5496]; //0x06E4
+	int8_t skipCollision; //0x1C5C
+
+	void disableSkipCollision() { CHECK_BAD(Player); skipCollision = 0x0; };
+	void enableSkipCollision() { CHECK_BAD(Player); skipCollision = 0x1; };
+	int32_t getAttackStance() { CHECK_BAD_NUM(Player); return attackStance; };
+	Vector3 getPosition() { CHECK_BAD_VEC3(Player); return position; };
+	int8_t getSkipCollision() { CHECK_BAD_NUM(Player); return skipCollision; };
+}; //Size: 0x2848
+
 class Entity
 {
 public:
@@ -81,3 +98,16 @@ inline const char* editEntityFunctionMask = "xx??????xx";
 
 inline const char* attackEntityPattern = "\x55\x8B\xEC\x8B\x45\x00\x89\x41\x00\x5D\xC2\x00\x00\xCC\xCC\xCC\x55\x8B\xEC\x51\x53\x56\x57\x8B\xF9\x8B\x47\x00\x8D\x4F";
 inline const char* attackEntityMask = "xxxxx?xx?xx??xxxxxxxxxxxxxx?xx";
+
+inline const char* chrMgrInstancePointerPattern = "\x55\x8b\xec\xa1\x00\x00\x00\x00\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\xa1\x00\x00\x00\x00\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\xa1\x00\x00\x00\x00\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\xa1\x00\x00\x00\x00\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\xa1\x00\x00\x00\x00\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\xa1\x00\x00\x00\x00\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\x83\xec";
+inline const char* chrMgrInstanePointerMask = "xxxx????xxxxxxxxxxxx????xxxxxxxxxxxx????xxxxxxxxxxxx????xxxxxxxxxxxx????xxxxxxxxxxxx????xxxxxxxxxxxxx";
+
+inline const char* getMainPtrFunctionPattern = "\x55\x8b\xec\x51\x89\x4d\x00\x8b\x45\x00\x8b\x40\x00\x8b\xe5\x5d\xc3\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\xcc\x55\x8b\xec\x83\xec\x00\x89\x4d\x00\x83\x7d";
+inline const char* getMainPtrFunctionMask = "xxxxxx?xx?xx?xxxxxxxxxxxxxxxxxxxxxxxx?xx?xx";
+
+inline const char* getMainInstancePtrClassPointerPattern = "\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x10\x56\x57";
+inline const char* getMainInstancePtrClassPointerMask = "xxxxxxxxxxx";
+inline const BYTE getMainInstancePtrClassPointerOffset = 0xF;
+
+inline const char* getMainInstancePtrPattern = "\x8B\x41\x00\xC3\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\xCC\x55\x8B\xEC\x81\xEC";
+inline const char* getMainInstancePtrMask = "xx?xxxxxxxxxxxxxxxxxx";

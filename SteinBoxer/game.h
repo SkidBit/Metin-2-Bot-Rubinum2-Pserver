@@ -4,11 +4,12 @@
 #include "constants.h"
 
 namespace game {
+	Player* getPlayerEntity();
+	float getDistanceBetweenEntityAndPlayer(Player* player, Entity* secondEntity);
 	Entity* getClosestMetinStone(Vector3 anchorPosition);
 	void enableWallhack();
 	void disableWallhack();
 	void resetPlayerAtatck();
-	Entity* getPlayerEntity();
 	bool areOtherPlayersPresent();
 	void pickupItems();
 	void initializePickupFunctionAddresses();

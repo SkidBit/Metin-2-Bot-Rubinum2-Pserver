@@ -17,6 +17,25 @@ typedef void(__thiscall* __attackEntityFunc)(void* classPointer, DWORD VID);
 __attackEntityFunc attackEntityFunc;
 uintptr_t attackEntityAddress;
 
+bool playerEntityFunctionsInitialized = false;
+typedef uintptr_t(__thiscall* __getMainInstancePtr)(void* classPointer);
+__getMainInstancePtr getMainInstancePtr;
+uintptr_t getMainInstancePtrClassPointerFunctionAddress;
+uintptr_t getMainInstancePtrClassPointer;
+uintptr_t getMainInstancePtrFunctionAddress;
+
+
+Player* game::getPlayerEntity() {
+	if (!playerEntityFunctionsInitialized) {
+		getMainInstancePtrClassPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)getMainInstancePtrClassPointerPattern, (char*)getMainInstancePtrClassPointerMask, "rbclient.exe");
+		getMainInstancePtrClassPointer = *(uintptr_t*)(getMainInstancePtrClassPointerFunctionAddress + getMainInstancePtrClassPointerOffset);
+		getMainInstancePtrFunctionAddress = (uintptr_t)mem::ScanModIn((char*)getMainInstancePtrPattern, (char*)getMainInstancePtrMask, "rbclient.exe");
+		getMainInstancePtr = (__getMainInstancePtr)(getMainInstancePtrFunctionAddress);
+		playerEntityFunctionsInitialized = true;
+	}
+	return (Player*)getMainInstancePtr(*(void**)getMainInstancePtrClassPointer);
+}
+
 void game::initializeCpythonPlayerSingleton() {
 	cPythonPlayerSingletonPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)cPythonPlayerSingletonPointerFunctionPattern, (char*)cPythonPlayerSingletonPointerFunctionMask, "rbclient.exe");
 	cPythonPlayerSingletonPointer = *(uintptr_t*)(cPythonPlayerSingletonPointerFunctionAddress + cPythonPlayerSingletonPointerOffsetToClassPointer);
@@ -80,32 +99,19 @@ void game::flushEntityArray() {
 	}
 }
 
-Entity* game::getPlayerEntity() {
-	for (int i = 0; i < 254; i++) {
-		if (entities[i] != 0) {
-			if (entities[i]->getIsOwnPlayer() == 1 && entities[i]->getIsPlayerCharacter() == playerIdentifier) {
-				//cout << "found own player: " << hex << entities[i] << endl;
-				return entities[i];
-			}
-		}
-	}
-	return 0;
-}
-
-
 bool game::areOtherPlayersPresent() {
 
 	int playerCount = 0;
 
 	for (int i = 0; i < 255; i++) {
 		if (entities[i] != 0) {
-			if (entities[i]->getIsPlayerCharacter() == playerIdentifier && entities[i]->getIsOwnPlayer() == 0) {
+			if (entities[i]->getIsPlayerCharacter() == playerIdentifier) {
 				playerCount++;
 				//cout << "some player found at: 0x" << hex << entities[i] << endl;
 			}
 		}
 	}
-	return playerCount > 0;
+	return playerCount > 1;
 }
 
 Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
@@ -150,6 +156,10 @@ float game::getDistanceBetweenEntityAndVec3(Entity* entity, Vector3 anchorPositi
 
 float game::getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity) {
 	return sqrt(pow(firstEntity->getPosition().x - secondEntity->getPosition().x, 2) + pow(firstEntity->getPosition().y - secondEntity->getPosition().y, 2));
+}
+
+float game::getDistanceBetweenEntityAndPlayer(Player* player, Entity* secondEntity) {
+	return sqrt(pow(player->getPosition().x - secondEntity->getPosition().x, 2) + pow(player->getPosition().y - secondEntity->getPosition().y, 2));
 }
 
 void game::enableWallhack() {
