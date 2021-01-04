@@ -16,18 +16,21 @@ public:
 	int32_t isPlayerCharacter; //0x0010 // if player 3F800000
 	char pad_0014[84]; //0x0014
 	int32_t isRendered; //0x0068
-	char pad_006C[932]; //0x006C
+	char pad_006C[924]; //0x006C
+	int32_t attackStance; //0x0408 != 0 if attacking
+	char pad_040C[4]; //0x040C
 	int32_t mobId; //0x0410
 	char pad_0414[68]; //0x0414
 	int32_t mobIsDead; //0x0458 1 if died recently, 0 otherwise
 	char pad_045C[4]; //0x045C
-	int32_t isOwnPlayer; //0x0460 1 if own 0 else
+	int32_t isOwnPlayer; //0x0460 1 if own, 0 else
 	char pad_0464[5400]; //0x0464
 	int32_t uid; //0x197C
 	char pad_1980[4]; //0x1980
-	int8_t skipCollision; //0x1984
+	int8_t skipCollision; //0x1984 1 if active, 0 else
 	char pad_1985[707]; //0x1985
 
+	int32_t getAttackStance() { CHECK_BAD_NUM(Entity); return attackStance; };
 	void disableSkipCollision() { CHECK_BAD(Entity); skipCollision = 0x0; };
 	void enableSkipCollision() { CHECK_BAD(Entity); skipCollision = 0x1; };
 	int8_t getSkipCollision() { CHECK_BAD_NUM(Entity); return skipCollision; };

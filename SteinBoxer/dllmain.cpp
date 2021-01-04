@@ -75,16 +75,23 @@ DWORD WINAPI MainThread(LPVOID param) {
 			if (!(freezeWhenPlayersPresent && game::areOtherPlayersPresent())) {
 				// check if we selected a stone to attack
 				if (attackedStone != 0) {
-					// mob is dead now
+					// time-critical check!
+					// will only be 1 for a short time until object is removed and replaced
 					if (attackedStone->getMobIsDead() == 1) {
 						Sleep(1000);
 						game::pickupItems();
-						cout << "[i] Picked up loot" << endl;
+						cout << "[i] Stone died - Picked up loot" << endl;
 						// dead entities are not instantly remove from the enity list so we need to wait
 						// some time for the game to update, so we don't spam attack the same (dead) entity
 						Sleep(3000);
-
 						attackedStone = 0;
+					}
+					else {
+						// mob alive and we don't attack or we are not at stone yet
+						if (game::getPlayerEntity()->getAttackStance() == 0) {
+							game::attackEntity(attackedStone);
+							//cout << "[i] Attacking again because we got reset..." << endl;
+						}
 					}
 				}
 				else {
@@ -110,9 +117,10 @@ DWORD WINAPI MainThread(LPVOID param) {
 			}
 			else {
 				cout << "[i] Freeze active and players present. Waiting..." << endl;
+				// reset attacked stone to be safe
+				attackedStone = 0;
 				Sleep(1000);
 			}
-
 		}
 		Sleep(25);
 	}
