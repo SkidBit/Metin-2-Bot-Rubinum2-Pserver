@@ -4,6 +4,7 @@
 #include "constants.h"
 #include "game.h"
 #include "entityHook.h"
+#include "whisperHook.h"
 
 using namespace std;
 #define show_console 1 //1 = show console ~ 0 = don't show console
@@ -14,6 +15,11 @@ uintptr_t originalStartEntiyEditFunction = 0x0;
 Entity* entities[255];
 Entity* entityPointer;
 uintptr_t editEntityFunctionAddress;
+
+bool gotWhispered = false;
+uintptr_t originalStartRecvWhisperPacketFunction = 0x0;
+uintptr_t recvWhisperPacketFunctionAddress = 0x0;
+vector<BYTE> originalBytesRecvWhisperPacketFunction;
 
 bool botRunning = false;
 bool freezeWhenPlayersPresent = true;
@@ -32,11 +38,16 @@ DWORD WINAPI MainThread(LPVOID param) {
 	cout << "Main module base address: 0x" << hex << baseAdressMainMod << endl;
 
 	editEntityFunctionAddress = (uintptr_t)mem::ScanModIn((char*)editEntityFunctionPattern, (char*)editEntityFunctionMask, "rbclient.exe");
+	recvWhisperPacketFunctionAddress = (uintptr_t)mem::ScanModIn((char*)recvWhisperPacketFunctionPattern, (char*)recvWhisperPacketFunctionMask, "rbclient.exe");
 
 	cout << "Edit entity function address: 0x" << hex << editEntityFunctionAddress << endl;
+	cout << "RecvWhisperPacket function address: 0x" << hex << recvWhisperPacketFunctionAddress << endl;
 
 	originalStartEntiyEditFunction = editEntityFunctionAddress + 5;
 	originalBytesEntiyEditFunction = mem::detour32((void*)editEntityFunctionAddress, entityHook, 8);
+
+	originalStartRecvWhisperPacketFunction = recvWhisperPacketFunctionAddress + 5;
+	originalBytesRecvWhisperPacketFunction = mem::detour32((void*)recvWhisperPacketFunctionAddress, whisperHook, 5);
 
 	cout << "-----DEBUGGING-----" << endl;
 
@@ -171,7 +182,23 @@ DWORD WINAPI WallhackTestThread(LPVOID param) {
 		}
 		Sleep(100);
 	}
-	cout << "[i] WallhackTestThread thread exiting" << endl;
+	cout << "[i] WallhackTest Thread exiting" << endl;
+	return 0;
+}
+
+DWORD WINAPI WhisperNotificationThread(LPVOID param) {
+
+	while (!shutdown) {
+		if (gotWhispered) {
+			Beep(587, 100);
+			Beep(698, 100);
+			Beep(880, 100);
+			Beep(698, 100);
+			gotWhispered = false;
+		}
+		Sleep(100);
+	}
+	cout << "[i] WhisperNotification Thread exiting" << endl;
 	return 0;
 }
 
@@ -242,6 +269,7 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 
 	// unhooking so we don't crash the game
 	mem::restoreBytes((void*)editEntityFunctionAddress, originalBytesEntiyEditFunction);
+	mem::restoreBytes((void*)recvWhisperPacketFunctionAddress, originalBytesRecvWhisperPacketFunction);
 	// disable wallhack
 	game::disableWallhack();
 	cout << "[i] WH disabled" << endl;
@@ -271,6 +299,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		CreateThread(nullptr, 0, FlushThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, PickupSpamThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, WallhackTestThread, hModule, 0, 0);
+		CreateThread(nullptr, 0, WhisperNotificationThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 
