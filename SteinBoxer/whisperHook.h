@@ -12,10 +12,10 @@ void playWhisperTune() {
 
 inline void __declspec(naked)whisperHook() {
 	__asm {
+		call playWhisperTune;
 		push ebp;
 		mov ebp, esp;
 		push 0xFF;
-		call playWhisperTune;
 		jmp[originalStartRecvWhisperPacketFunction];
 	}
 }

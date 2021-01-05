@@ -83,6 +83,11 @@ extern bool freezeWhenPlayersPresent;
 extern bool firstLoop;
 extern uintptr_t editEntityFunctionAddress;
 
+extern uintptr_t originalStartRecvWhisperPacketFunction;
+extern uintptr_t recvWhisperPacketFunctionAddress;
+
+extern std::vector<int> blacklistedUids;
+
 inline const char* pickupFunctionPattern = "\x55\x8B\xEC\x6A\x00\x68\x00\x00\x00\x00\x64\x00\x00\x00\x00\x00\x00\x00\x00\x00\x53\x56\x57\xA1\x00\x00\x00\x00\x00\x00\x00\x00\x45\x00\x64\x00\x00\x00\x00\x00\x00\x00\x00\x00\xF0\x8D\x00\x00\x8B\x01";
 inline const char* pickupFunctionMask = "xxxx?x????x?????????xxxx????????x?x?????????xx??xx";
 
@@ -114,6 +119,3 @@ inline const char* getMainInstancePtrMask = "xx?xxxxxxxxxxxxxxxxxx";
 
 inline const char* recvWhisperPacketFunctionPattern = "\x55\x8B\xEC\x6A\xFF\x68\x00\x00\x00\x00\x64\xA1\x00\x00\x00\x00\x50\x81\xEC\x00\x00\x00\x00\xA1\x00\x00\x00\x00\x33\xC5\x89\x45\xF0\x53\x56\x57\x50\x8D\x45\xF4\x64\xA3\x00\x00\x00\x00\x8B\xF9\x8D\x85\x00\x00\x00\x00";
 inline const char* recvWhisperPacketFunctionMask = "xxxxxx????xx????xxx????x????xxxxxxxxxxxxxx????xxxx????";
-
-extern uintptr_t originalStartRecvWhisperPacketFunction;
-extern uintptr_t recvWhisperPacketFunctionAddress;

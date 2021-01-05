@@ -125,20 +125,26 @@ Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 
 	for (int i = 0; i < 255; i++) {
 		if (entities[i] != 0) {
-			
 			tempMobId = entities[i]->getMobId();
 
 			// check if mob is metin stone
 			if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd || tempMobId >= oreIdStart && tempMobId <= oreIdEnd) {
-				//cout << "Stone found, mobID: " << dec << tempMobId << endl;
-				//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
 				stoneCount++;
 
-				tempDistanceToClosestStone = game::getDistanceBetweenEntityAndVec3(entities[i], anchorPosition);
-				cout << "Distance to stone/ore: " << dec << tempDistanceToClosestStone << endl;
-				if (tempDistanceToClosestStone < distanceToClosestStone) {
-					distanceToClosestStone = tempDistanceToClosestStone;
-					closestMetinStone = entities[i];
+				// check if stone is not on blacklist
+				if (find(blacklistedUids.begin(), blacklistedUids.end(), entities[i]->getUid()) != blacklistedUids.end()) {
+					cout << "[i] Blacklisted stone gets ignored..." << endl;
+				}
+				else {
+					tempDistanceToClosestStone = game::getDistanceBetweenEntityAndVec3(entities[i], anchorPosition);
+					cout << "Distance to stone/ore: " << dec << tempDistanceToClosestStone << endl;
+
+					if (tempDistanceToClosestStone < distanceToClosestStone) {
+						distanceToClosestStone = tempDistanceToClosestStone;
+						closestMetinStone = entities[i];
+						//cout << "Stone found, mobID: " << dec << tempMobId << endl;
+						//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
+					}
 				}
 			}
 		}

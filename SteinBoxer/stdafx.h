@@ -10,3 +10,4 @@
 #include <vector>
 #include <chrono>
 #include "ntdll.h"
+#include <algorithm>
