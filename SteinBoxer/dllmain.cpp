@@ -16,7 +16,6 @@ Entity* entities[255];
 Entity* entityPointer;
 uintptr_t editEntityFunctionAddress;
 
-bool gotWhispered = false;
 uintptr_t originalStartRecvWhisperPacketFunction = 0x0;
 uintptr_t recvWhisperPacketFunctionAddress = 0x0;
 vector<BYTE> originalBytesRecvWhisperPacketFunction;
@@ -186,22 +185,6 @@ DWORD WINAPI WallhackTestThread(LPVOID param) {
 	return 0;
 }
 
-DWORD WINAPI WhisperNotificationThread(LPVOID param) {
-
-	while (!shutdown) {
-		if (gotWhispered) {
-			Beep(587, 100);
-			Beep(698, 100);
-			Beep(880, 100);
-			Beep(698, 100);
-			gotWhispered = false;
-		}
-		Sleep(100);
-	}
-	cout << "[i] WhisperNotification Thread exiting" << endl;
-	return 0;
-}
-
 DWORD WINAPI ControlsThread(LPVOID param) {
 	while (!shutdown) {
 
@@ -299,7 +282,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		CreateThread(nullptr, 0, FlushThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, PickupSpamThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, WallhackTestThread, hModule, 0, 0);
-		CreateThread(nullptr, 0, WhisperNotificationThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 
