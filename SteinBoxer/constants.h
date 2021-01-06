@@ -8,23 +8,6 @@
 
 struct Vector3 { float x, y, z; };
 
-class Player
-{
-public:
-	char pad_0000[732]; //0x0000
-	Vector3 position; //0x02DC
-	char pad_02E8[1016]; //0x02E8
-	int32_t attackStance; //0x06E0
-	char pad_06E4[5496]; //0x06E4
-	int8_t skipCollision; //0x1C5C
-
-	void disableSkipCollision() { CHECK_BAD(Player); skipCollision = 0x0; };
-	void enableSkipCollision() { CHECK_BAD(Player); skipCollision = 0x1; };
-	int32_t getAttackStance() { CHECK_BAD_NUM(Player); return attackStance; };
-	Vector3 getPosition() { CHECK_BAD_VEC3(Player); return position; };
-	int8_t getSkipCollision() { CHECK_BAD_NUM(Player); return skipCollision; };
-}; //Size: 0x2848
-
 class Entity
 {
 public:
@@ -35,15 +18,23 @@ public:
 	int32_t isPlayerCharacter; //0x02E8 // if player 3F800000
 	char pad_02EC[84]; //0x02EC
 	int32_t isRendered; //0x0340
-	char pad_0344[932]; //0x0344
+	char pad_0344[924]; //0x0344
+	int32_t attackStance; //0x06E0
+	char pad_06E4[4]; //0x06E4
 	int32_t mobID; //0x06E8
 	char pad_06EC[68]; //0x06EC
 	int32_t mobDiedRecently; //0x0730 1 if died recently, 0 otherwise
 	char pad_0734[5408]; //0x0734
 	int32_t uID; //0x1C54
-	char pad_1C58[1024]; //0x1C58
+	char pad_1C58[4]; //0x1C58
+	int8_t skipCollision; //0x1C5C
+	char pad_1C5D[1019]; //0x1C5D
 
+	void disableSkipCollision() { CHECK_BAD(Entity); skipCollision = 0x0; };
+	void enableSkipCollision() { CHECK_BAD(Entity); skipCollision = 0x1; };
+	int32_t getAttackStance() { CHECK_BAD_NUM(Entity); return attackStance; };
 	Vector3 getPosition() { CHECK_BAD_VEC3(Entity); return position; };
+	int8_t getSkipCollision() { CHECK_BAD_NUM(Entity); return skipCollision; };
 	int32_t getIsPlayerCharacter() { CHECK_BAD_NUM(Entity); return isPlayerCharacter; };
 	int32_t getIsRendered() { CHECK_BAD_NUM(Entity); return isRendered; };
 	void setIsRendered(int32_t value) { CHECK_BAD(Entity); isRendered = value; };

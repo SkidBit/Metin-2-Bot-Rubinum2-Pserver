@@ -117,7 +117,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 
 						cout << "CLOSEST TO PLAYER " << hex << closestStoneToPlayer << endl;
 
-						if (game::getDistanceBetweenEntityAndPlayer(game::getPlayerEntity(), closestStoneToPlayer) < distanceToPreferClosestStone) {
+						if (game::getDistanceBetweenEntities(game::getPlayerEntity(), closestStoneToPlayer) < distanceToPreferClosestStone) {
 							attackedStone = closestStoneToPlayer;
 							// if very close to stone attack that one instead of closest to anchor
 							//game::playerAttackMobWithUid(closestStoneToPlayer);

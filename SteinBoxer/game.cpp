@@ -40,7 +40,7 @@ TCharacterInstanceMap game::getEntityMap() {
 	return *(TCharacterInstanceMap*)tCharacterInstanceMapAddress;
 }
 
-Player* game::getPlayerEntity() {
+Entity* game::getPlayerEntity() {
 	if (!playerEntityFunctionsInitialized) {
 		getMainInstancePtrClassPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)getMainInstancePtrClassPointerPattern, (char*)getMainInstancePtrClassPointerMask, "rbclient.exe");
 		getMainInstancePtrClassPointer = *(uintptr_t*)(getMainInstancePtrClassPointerFunctionAddress + getMainInstancePtrClassPointerOffset);
@@ -48,7 +48,7 @@ Player* game::getPlayerEntity() {
 		getMainInstancePtr = (__getMainInstancePtr)(getMainInstancePtrFunctionAddress);
 		playerEntityFunctionsInitialized = true;
 	}
-	return (Player*)getMainInstancePtr(*(void**)getMainInstancePtrClassPointer);
+	return (Entity*)getMainInstancePtr(*(void**)getMainInstancePtrClassPointer);
 }
 
 void game::initializeCpythonPlayerSingleton() {
@@ -170,10 +170,6 @@ float game::getDistanceBetweenEntityAndVec3(Entity* entity, Vector3 anchorPositi
 
 float game::getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity) {
 	return sqrt(pow(firstEntity->getPosition().x - secondEntity->getPosition().x, 2) + pow(firstEntity->getPosition().y - secondEntity->getPosition().y, 2));
-}
-
-float game::getDistanceBetweenEntityAndPlayer(Player* player, Entity* secondEntity) {
-	return sqrt(pow(player->getPosition().x - secondEntity->getPosition().x, 2) + pow(player->getPosition().y - secondEntity->getPosition().y, 2));
 }
 
 void game::enableWallhack() {

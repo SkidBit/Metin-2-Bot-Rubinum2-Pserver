@@ -4,8 +4,7 @@
 #include "constants.h"
 
 namespace game {
-	Player* getPlayerEntity();
-	float getDistanceBetweenEntityAndPlayer(Player* player, Entity* secondEntity);
+	Entity* getPlayerEntity();
 	Entity* getClosestMetinStone(Vector3 anchorPosition);
 	void enableWallhack();
 	void disableWallhack();
