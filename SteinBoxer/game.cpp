@@ -29,6 +29,38 @@ uintptr_t* tCharacterInstanceMapPointer;
 uintptr_t tCharacterInstanceMapAddress;
 bool tCharacterInstanceMapInitialized = false;
 
+uintptr_t cPythonNetworkStreamPointerAddress;
+uintptr_t cPythonNetworkStreamPointer;
+uintptr_t sendShopSellPacketAddress;
+bool sellStonesInitialized = false;
+typedef void(__thiscall* __sellItemFunc)(void* classPointer, int16_t slot, int amount, char sellWithoutNpc);
+__sellItemFunc sellItemFunc;
+
+
+void game::sellFirstStonePage() {
+	for (int i = 0; i < 45; i++) {
+		// following the 0xB, 0x10B, 0x20B... pattern
+		game::sellItem(i*256+11,500);
+		// maybe this is a bit too fast
+		Sleep(100);
+	}
+}
+
+void game::sellItem(int16_t slot, int amount) {
+
+	if (!sellStonesInitialized) {
+		cPythonNetworkStreamPointerAddress = (uintptr_t)mem::ScanModIn((char*)cPythonNetworkStreamPointerPattern, (char*)cPythonNetworkStreamPointerMask, "rbclient.exe");
+		cPythonNetworkStreamPointer = *(uintptr_t*)(cPythonNetworkStreamPointerAddress + cPythonNetworkStreamPointerOfset);
+		//cout << "cPythonNetworkStreamPointer " << hex << cPythonNetworkStreamPointer << endl;
+		sendShopSellPacketAddress = (uintptr_t)mem::ScanModIn((char*)sendShopSellPacketPattern, (char*)sendShopSellPacketMask, "rbclient.exe");
+		//cout << "sendShopSellPacketAddress " << hex << sendShopSellPacketAddress << endl;
+		sellItemFunc = __sellItemFunc(sendShopSellPacketAddress);
+
+		sellStonesInitialized = true;
+	}
+	sellItemFunc(*(void**)cPythonNetworkStreamPointer, slot, amount, 0x1);
+}
+
 TCharacterInstanceMap game::getEntityMap() {
 	if (!tCharacterInstanceMapInitialized) {
 		recvDeadPacketFunctionAddress = (uintptr_t)mem::ScanModIn((char*)recvDeadPacketFunctionPattern, (char*)recvDeadPacketFunctionMask, "rbclient.exe");

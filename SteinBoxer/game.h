@@ -20,4 +20,6 @@ namespace game {
 	void attackVID(DWORD VID);
 	void initializeCpythonPlayerSingleton();
 	TCharacterInstanceMap getEntityMap();
+	void sellFirstStonePage();
+	void sellItem(int16_t slot, int amount);
 }

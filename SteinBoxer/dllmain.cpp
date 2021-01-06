@@ -55,6 +55,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 	cout << "[i] F2 to toggle freeze option, default value is ON" << endl;
 	cout << "[i] F3 to toggle pickup spam, default value is OFF" << endl;
 	cout << "[i] F4 to manually toggle wallhack" << endl;
+	cout << "[i] F12 to sell the first stone page (TAKE OUT +4 STONES BEFORE)" << endl;
 	cout << "[i] INSERT to shutdown bot and eject DLL" << endl;
 
 	while (!shutdown) {
@@ -231,6 +232,11 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 			Sleep(200);
 		}
 
+		if (GetAsyncKeyState(VK_F12) & 1) {
+			cout << "[->] SELLING FIRST STONE PAGE, PLEASE WAIT" << endl;
+			game::sellFirstStonePage();
+			Sleep(200);
+		}
 
 		if (GetAsyncKeyState(VK_INSERT) & 1) {
 

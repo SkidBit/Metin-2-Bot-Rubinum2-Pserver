@@ -104,3 +104,10 @@ inline const char* recvDeadPacketFunctionPattern = "\x55\x8B\xEC\x83\xEC\x10\xA1
 inline const char* recvDeadPacketFunctionMask = "xxxxxxx????xxxxxxxxx";
 inline const BYTE offsetTocPythonCharacterManagerPointer = 0x44;
 inline const BYTE offsetToTCharacterInstanceMap = 0x20;
+
+inline const char* cPythonNetworkStreamPointerPattern = "\x8B\x0D\x00\x00\x00\x00\xE8\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x5E\x8B\xE5\x5D\xC3\xCC\xCC\xCC\x55\x8B\xEC\x51";
+inline const char* cPythonNetworkStreamPointerMask = "xx????x????x????xxxxxxxxxxxx";
+inline const BYTE cPythonNetworkStreamPointerOfset = 0x2;
+
+inline const char* sendShopSellPacketPattern = "\x55\x8B\xEC\x51\x56\x8B\xF1\xE8\x00\x00\x00\x00\x84\xC0\x0F\x84\x00\x00\x00\x00";
+inline const char* sendShopSellPacketMask = "xxxxxxxx????xxxx????";
