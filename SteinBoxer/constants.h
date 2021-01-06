@@ -6,8 +6,6 @@
 #define CHECK_BAD_NUM(x) if(IsBadReadPtr(this, sizeof(x))) return 0
 #define CHECK_BAD_VEC3(x) if(IsBadReadPtr(this, sizeof(x))) return Vector3{0,0,0}
 
-
-
 struct Vector3 { float x, y, z; };
 
 class Player
@@ -73,6 +71,8 @@ extern bool shutdown;
 extern bool botRunning;
 extern bool freezeWhenPlayersPresent;
 extern bool firstLoop;
+
+extern bool gotWhispered;
 
 extern uintptr_t originalStartRecvWhisperPacketFunction;
 extern uintptr_t recvWhisperPacketFunctionAddress;

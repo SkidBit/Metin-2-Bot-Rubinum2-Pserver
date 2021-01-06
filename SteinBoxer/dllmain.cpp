@@ -30,8 +30,7 @@ chrono::steady_clock::time_point startTime;
 chrono::steady_clock::time_point currentTime;
 int elapsedTime;
 
-
-
+extern bool gotWhispered = false;
 
 DWORD WINAPI MainThread(LPVOID param) {
 
@@ -262,6 +261,21 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 	return 0;
 }
 
+DWORD WINAPI WhisperNotificationThread(LPVOID param) {
+	while (!shutdown) {
+		if (gotWhispered) {
+			Beep(587, 100);
+			Beep(698, 100);
+			Beep(880, 100);
+			Beep(698, 100);
+			gotWhispered = false;
+		}
+		Sleep(100);
+	}
+	cout << "[i] WhisperNotification Thread exiting" << endl;
+	return 0;
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule,
 	DWORD  ul_reason_for_call,
 	LPVOID lpReserved
@@ -273,6 +287,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		CreateThread(nullptr, 0, ControlsThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, PickupSpamThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, WallhackTestThread, hModule, 0, 0);
+		CreateThread(nullptr, 0, WhisperNotificationThread, hModule, 0, 0);
 		if (show_console) console(hModule);
 	}
 
