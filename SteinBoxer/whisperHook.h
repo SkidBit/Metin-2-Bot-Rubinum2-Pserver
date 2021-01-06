@@ -12,7 +12,9 @@ void playWhisperTune() {
 
 inline void __declspec(naked)whisperHook() {
 	__asm {
+		pushad;
 		call playWhisperTune;
+		popad;
 		push ebp;
 		mov ebp, esp;
 		push 0xFF;

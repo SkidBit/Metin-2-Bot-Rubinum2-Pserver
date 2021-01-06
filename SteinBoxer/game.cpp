@@ -24,6 +24,21 @@ uintptr_t getMainInstancePtrClassPointerFunctionAddress;
 uintptr_t getMainInstancePtrClassPointer;
 uintptr_t getMainInstancePtrFunctionAddress;
 
+uintptr_t recvDeadPacketFunctionAddress;
+uintptr_t* tCharacterInstanceMapPointer;
+uintptr_t tCharacterInstanceMapAddress;
+bool tCharacterInstanceMapInitialized = false;
+
+TCharacterInstanceMap game::getEntityMap() {
+	if (!tCharacterInstanceMapInitialized) {
+		recvDeadPacketFunctionAddress = (uintptr_t)mem::ScanModIn((char*)recvDeadPacketFunctionPattern, (char*)recvDeadPacketFunctionMask, "rbclient.exe");
+		tCharacterInstanceMapPointer = *(uintptr_t**)(recvDeadPacketFunctionAddress + offsetTocPythonCharacterManagerPointer);
+		tCharacterInstanceMapAddress = *tCharacterInstanceMapPointer;
+		tCharacterInstanceMapAddress += offsetToTCharacterInstanceMap;
+		tCharacterInstanceMapInitialized = true;
+	}
+	return *(TCharacterInstanceMap*)tCharacterInstanceMapAddress;
+}
 
 Player* game::getPlayerEntity() {
 	if (!playerEntityFunctionsInitialized) {
@@ -93,58 +108,51 @@ void game::pickupItems() {
 	pickupCloseFunc(*(void**)cPythonPlayerSingletonPointer);
 }
 
-void game::flushEntityArray() {
-	for (int i = 0; i < 254; i++) {
-		entities[i] = 0;
-	}
-}
 
 bool game::areOtherPlayersPresent() {
-
 	int playerCount = 0;
+	TCharacterInstanceMap entities = game::getEntityMap();
 
-	for (int i = 0; i < 255; i++) {
-		if (entities[i] != 0) {
-			if (entities[i]->getIsPlayerCharacter() == playerIdentifier) {
-				playerCount++;
-				//cout << "some player found at: 0x" << hex << entities[i] << endl;
-			}
+	for (TCharacterInstanceMap::iterator itor = entities.begin(); itor != entities.end(); itor++) {
+		if (itor->second->getIsPlayerCharacter() == playerIdentifier) {
+			playerCount++;
+			//cout << "some player found at: 0x" << hex << entities[i] << endl;
 		}
 	}
+
 	return playerCount > 1;
 }
 
 Entity* game::getClosestMetinStone(Vector3 anchorPosition) {
 	cout << "Searching for metin stones now..." << endl;
 
+	TCharacterInstanceMap entities = game::getEntityMap();
 	Entity* closestMetinStone = nullptr;
 	float distanceToClosestStone = INFINITY;
 	int tempMobId;
 	float tempDistanceToClosestStone;
 	int stoneCount = 0;
 
-	for (int i = 0; i < 255; i++) {
-		if (entities[i] != 0) {
-			tempMobId = entities[i]->getMobId();
+	for (TCharacterInstanceMap::iterator itor = entities.begin(); itor != entities.end(); itor++) {
+		tempMobId = itor->second->getMobId();
 
-			// check if mob is metin stone
-			if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd || tempMobId >= oreIdStart && tempMobId <= oreIdEnd) {
-				stoneCount++;
+		// check if mob is metin stone
+		if (tempMobId >= metinIdStart && tempMobId <= metinIdEnd || tempMobId >= oreIdStart && tempMobId <= oreIdEnd) {
+			stoneCount++;
 
-				// check if stone is not on blacklist
-				if (find(blacklistedUids.begin(), blacklistedUids.end(), entities[i]->getUid()) != blacklistedUids.end()) {
-					cout << "[i] Blacklisted stone gets ignored..." << endl;
-				}
-				else {
-					tempDistanceToClosestStone = game::getDistanceBetweenEntityAndVec3(entities[i], anchorPosition);
-					cout << "Distance to stone/ore: " << dec << tempDistanceToClosestStone << endl;
+			// check if stone is not on blacklist
+			if (find(blacklistedUids.begin(), blacklistedUids.end(), itor->first) != blacklistedUids.end()) {
+				cout << "[i] Blacklisted stone gets ignored..." << endl;
+			}
+			else {
+				tempDistanceToClosestStone = game::getDistanceBetweenEntityAndVec3(itor->second, anchorPosition);
+				cout << "Distance to stone/ore: " << dec << tempDistanceToClosestStone << endl;
 
-					if (tempDistanceToClosestStone < distanceToClosestStone) {
-						distanceToClosestStone = tempDistanceToClosestStone;
-						closestMetinStone = entities[i];
-						//cout << "Stone found, mobID: " << dec << tempMobId << endl;
-						//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
-					}
+				if (tempDistanceToClosestStone < distanceToClosestStone) {
+					distanceToClosestStone = tempDistanceToClosestStone;
+					closestMetinStone = itor->second;
+					//cout << "Stone found, mobID: " << dec << tempMobId << endl;
+					//cout << "Stone found, mobAddress: 0x" << hex << entities[i] << endl;
 				}
 			}
 		}

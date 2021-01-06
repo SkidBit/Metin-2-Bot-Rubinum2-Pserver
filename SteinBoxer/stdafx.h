@@ -11,3 +11,4 @@
 #include <chrono>
 #include "ntdll.h"
 #include <algorithm>
+#include <map>

@@ -3,18 +3,12 @@
 #include "mem.h"
 #include "constants.h"
 #include "game.h"
-#include "entityHook.h"
 #include "whisperHook.h"
 
 using namespace std;
 #define show_console 1 //1 = show console ~ 0 = don't show console
 
 uintptr_t baseAdressMainMod;
-vector<BYTE> originalBytesEntiyEditFunction;
-uintptr_t originalStartEntiyEditFunction = 0x0;
-Entity* entities[255];
-Entity* entityPointer;
-uintptr_t editEntityFunctionAddress;
 
 uintptr_t originalStartRecvWhisperPacketFunction = 0x0;
 uintptr_t recvWhisperPacketFunctionAddress = 0x0;
@@ -36,20 +30,18 @@ chrono::steady_clock::time_point startTime;
 chrono::steady_clock::time_point currentTime;
 int elapsedTime;
 
+
+
+
 DWORD WINAPI MainThread(LPVOID param) {
 
 	baseAdressMainMod = (uintptr_t)GetModuleHandle(NULL);
 	cout << "-----DEBUGGING-----" << endl;
 	cout << "Main module base address: 0x" << hex << baseAdressMainMod << endl;
 
-	editEntityFunctionAddress = (uintptr_t)mem::ScanModIn((char*)editEntityFunctionPattern, (char*)editEntityFunctionMask, "rbclient.exe");
 	recvWhisperPacketFunctionAddress = (uintptr_t)mem::ScanModIn((char*)recvWhisperPacketFunctionPattern, (char*)recvWhisperPacketFunctionMask, "rbclient.exe");
 
-	cout << "Edit entity function address: 0x" << hex << editEntityFunctionAddress << endl;
 	cout << "RecvWhisperPacket function address: 0x" << hex << recvWhisperPacketFunctionAddress << endl;
-
-	originalStartEntiyEditFunction = editEntityFunctionAddress + 5;
-	originalBytesEntiyEditFunction = mem::detour32((void*)editEntityFunctionAddress, entityHook, 8);
 
 	originalStartRecvWhisperPacketFunction = recvWhisperPacketFunctionAddress + 5;
 	originalBytesRecvWhisperPacketFunction = mem::detour32((void*)recvWhisperPacketFunctionAddress, whisperHook, 5);
@@ -92,7 +84,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 					if (attackedStone != 0) {
 						// time-critical check!
 						// will only be 1 for a short time until object is removed and replaced
-						if (attackedStone->getMobIsDead() == 1) {
+						if (attackedStone->getMobDiedRecently() == 1) {
 							Sleep(1000);
 							game::pickupItems();
 							cout << "[i] Stone died - Picked up loot" << endl;
@@ -169,26 +161,6 @@ DWORD WINAPI PickupSpamThread(LPVOID param) {
 		Sleep(100);
 	}
 	cout << "[i] PickupSpam thread exiting" << endl;
-	return 0;
-}
-
-DWORD WINAPI FlushThread(LPVOID param) {
-	while (!shutdown) {
-		if (game::getPlayerEntity() == 0) {
-			// need to clear recently attacked stone
-			attackedStone = 0;
-			// we need to run firstloop again for setup after playerent was null
-			firstLoop = true;
-			cout << "[i] PlayerEnt is NULL" << endl;
-			// flush entity array to get rid of broken entity entries after teleporting etc.
-			game::flushEntityArray();
-			// Sleep to not spam the function
-			Sleep(500);
-		}
-		Sleep(25);
-
-	}
-	cout << "[i] Flush thread exiting" << endl;
 	return 0;
 }
 
@@ -272,7 +244,6 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 	}
 
 	// unhooking so we don't crash the game
-	mem::restoreBytes((void*)editEntityFunctionAddress, originalBytesEntiyEditFunction);
 	mem::restoreBytes((void*)recvWhisperPacketFunctionAddress, originalBytesRecvWhisperPacketFunction);
 	// disable wallhack
 	game::disableWallhack();
@@ -300,7 +271,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
 		DisableThreadLibraryCalls((HMODULE)hModule);
 		CreateThread(nullptr, 0, MainThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, ControlsThread, hModule, 0, 0);
-		CreateThread(nullptr, 0, FlushThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, PickupSpamThread, hModule, 0, 0);
 		CreateThread(nullptr, 0, WallhackTestThread, hModule, 0, 0);
 		if (show_console) console(hModule);

@@ -20,4 +20,5 @@ namespace game {
 	void attackEntity(Entity* entity);
 	void attackVID(DWORD VID);
 	void initializeCpythonPlayerSingleton();
+	TCharacterInstanceMap getEntityMap();
 }
