@@ -3,7 +3,6 @@
 using namespace std;
 
 void mem::restoreBytes(void* address, vector<BYTE>bytesToRestore) {
-
 	DWORD curProtection;
 	VirtualProtect(address, bytesToRestore.size(), PAGE_EXECUTE_READWRITE, &curProtection);
 
@@ -13,8 +12,7 @@ void mem::restoreBytes(void* address, vector<BYTE>bytesToRestore) {
 	VirtualProtect(address, bytesToRestore.size(), curProtection, &temp);
 }
 
-vector<BYTE> mem::detour32(void* src, void* dst, int len)
-{
+vector<BYTE> mem::detour32(void* src, void* dst, int len){
 	DWORD curProtection;
 	VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &curProtection);
 
@@ -42,10 +40,8 @@ vector<BYTE> mem::detour32(void* src, void* dst, int len)
 }
 
 
-uintptr_t mem::findDMAAddy(uintptr_t ptr, vector<uintptr_t> offsets)
-{
+uintptr_t mem::findDMAAddy(uintptr_t ptr, vector<uintptr_t> offsets){
 	uintptr_t addr = ptr;
-
 	for (unsigned int i = 0; i < offsets.size(); ++i)
 	{
 		// not tested
@@ -58,8 +54,7 @@ uintptr_t mem::findDMAAddy(uintptr_t ptr, vector<uintptr_t> offsets)
 	return addr;
 }
 
-bool mem::IsBadReadPtr(void* p)
-{
+bool mem::IsBadReadPtr(void* p){
 	MEMORY_BASIC_INFORMATION mbi = { 0 };
 	if (::VirtualQuery(p, &mbi, sizeof(mbi)))
 	{
@@ -67,15 +62,13 @@ bool mem::IsBadReadPtr(void* p)
 		bool b = !(mbi.Protect & mask);
 		// check the page is not a guard page
 		if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS)) b = true;
-
 		return b;
 	}
 	return true;
 }
 
 
-char* TO_CHAR(wchar_t* string)
-{
+char* TO_CHAR(wchar_t* string){
 	size_t len = wcslen(string) + 1;
 	char* c_string = new char[len];
 	size_t numCharsRead;
@@ -83,20 +76,16 @@ char* TO_CHAR(wchar_t* string)
 	return c_string;
 }
 
-PEB* GetPEB()
-{
+PEB* GetPEB(){
 #ifdef _WIN64
 	PEB* peb = (PEB*)__readgsword(0x60);
-
 #else
 	PEB* peb = (PEB*)__readfsdword(0x30);
 #endif
-
 	return peb;
 }
 
-LDR_DATA_TABLE_ENTRY* GetLDREntry(std::string name)
-{
+LDR_DATA_TABLE_ENTRY* GetLDREntry(std::string name){
 	LDR_DATA_TABLE_ENTRY* ldr = nullptr;
 
 	PEB* peb = GetPEB();
@@ -126,8 +115,7 @@ LDR_DATA_TABLE_ENTRY* GetLDREntry(std::string name)
 }
 
 
-char* mem::ScanModIn(char* pattern, char* mask, std::string modName)
-{
+char* mem::ScanModIn(char* pattern, char* mask, std::string modName){
 	LDR_DATA_TABLE_ENTRY* ldr = GetLDREntry(modName);
 
 	char* match = mem::ScanInternal(pattern, mask, (char*)ldr->DllBase, ldr->SizeOfImage);
@@ -136,8 +124,7 @@ char* mem::ScanModIn(char* pattern, char* mask, std::string modName)
 }
 
 
-char* mem::ScanInternal(char* pattern, char* mask, char* begin, intptr_t size)
-{
+char* mem::ScanInternal(char* pattern, char* mask, char* begin, intptr_t size){
 	char* match{ nullptr };
 	MEMORY_BASIC_INFORMATION mbi{};
 
@@ -157,8 +144,7 @@ char* mem::ScanInternal(char* pattern, char* mask, char* begin, intptr_t size)
 
 
 
-char* mem::ScanBasic(char* pattern, char* mask, char* begin, intptr_t size)
-{
+char* mem::ScanBasic(char* pattern, char* mask, char* begin, intptr_t size){
 	intptr_t patternLen = strlen(mask);
 
 	for (int i = 0; i < size; i++)
