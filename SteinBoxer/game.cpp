@@ -5,50 +5,44 @@ using namespace std;
 
 typedef void(__thiscall* __pickupCloseFunc)(void* classPointer);
 bool pickupFunctionAddressesInitialized = false;
-uintptr_t pickupFunctionAddress;
 __pickupCloseFunc pickupCloseFunc;
 
 bool cPythonPlayerSingletonInitialized = false;
-uintptr_t cPythonPlayerSingletonPointerFunctionAddress;
 uintptr_t cPythonPlayerSingletonPointer;
 
 bool attackEntityAddressInitialized = false;
 typedef void(__thiscall* __attackEntityFunc)(void* classPointer, DWORD VID);
 __attackEntityFunc attackEntityFunc;
-uintptr_t attackEntityAddress;
 
 bool playerEntityFunctionsInitialized = false;
 typedef uintptr_t(__thiscall* __getMainInstancePtr)(void* classPointer);
 __getMainInstancePtr getMainInstancePtr;
-uintptr_t getMainInstancePtrClassPointerFunctionAddress;
-uintptr_t getMainInstancePtrClassPointer;
-uintptr_t getMainInstancePtrFunctionAddress;
 
-uintptr_t recvDeadPacketFunctionAddress;
-uintptr_t* tCharacterInstanceMapPointer;
+uintptr_t getMainInstancePtrClassPointer;
 uintptr_t tCharacterInstanceMapAddress;
 bool tCharacterInstanceMapInitialized = false;
 
-uintptr_t cPythonNetworkStreamPointerAddress;
 uintptr_t cPythonNetworkStreamPointer;
-uintptr_t sendShopSellPacketAddress;
 bool sellStonesInitialized = false;
 typedef void(__thiscall* __sellItemFunc)(void* classPointer, int16_t slot, int amount, char sellWithoutNpc);
 __sellItemFunc sellItemFunc;
 
 
-void game::sellFirstStonePage() {
+void game::playerSellFirstStonePage() {
 	for (int i = 0; i < 45; i++) {
 		// following the 0xB, 0x10B, 0x20B... pattern
-		game::sellItem(i*256+11,500);
+		game::playerSellItem(i*256+11,500);
 		// maybe this is a bit too fast
 		Sleep(100);
 	}
 }
 
-void game::sellItem(int16_t slot, int amount) {
+void game::playerSellItem(int16_t slot, int amount) {
 
 	if (!sellStonesInitialized) {
+		uintptr_t cPythonNetworkStreamPointerAddress;
+		uintptr_t sendShopSellPacketAddress;
+
 		cPythonNetworkStreamPointerAddress = (uintptr_t)mem::ScanModIn((char*)cPythonNetworkStreamPointerPattern, (char*)cPythonNetworkStreamPointerMask, "rbclient.exe");
 		cPythonNetworkStreamPointer = *(uintptr_t*)(cPythonNetworkStreamPointerAddress + cPythonNetworkStreamPointerOfset);
 		//cout << "cPythonNetworkStreamPointer " << hex << cPythonNetworkStreamPointer << endl;
@@ -63,6 +57,9 @@ void game::sellItem(int16_t slot, int amount) {
 
 TCharacterInstanceMap game::getEntityMap() {
 	if (!tCharacterInstanceMapInitialized) {
+		uintptr_t recvDeadPacketFunctionAddress;
+		uintptr_t* tCharacterInstanceMapPointer;
+
 		recvDeadPacketFunctionAddress = (uintptr_t)mem::ScanModIn((char*)recvDeadPacketFunctionPattern, (char*)recvDeadPacketFunctionMask, "rbclient.exe");
 		tCharacterInstanceMapPointer = *(uintptr_t**)(recvDeadPacketFunctionAddress + offsetTocPythonCharacterManagerPointer);
 		tCharacterInstanceMapAddress = *tCharacterInstanceMapPointer;
@@ -74,6 +71,9 @@ TCharacterInstanceMap game::getEntityMap() {
 
 Entity* game::getPlayerEntity() {
 	if (!playerEntityFunctionsInitialized) {
+		uintptr_t getMainInstancePtrClassPointerFunctionAddress;
+		uintptr_t getMainInstancePtrFunctionAddress;
+
 		getMainInstancePtrClassPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)getMainInstancePtrClassPointerPattern, (char*)getMainInstancePtrClassPointerMask, "rbclient.exe");
 		getMainInstancePtrClassPointer = *(uintptr_t*)(getMainInstancePtrClassPointerFunctionAddress + getMainInstancePtrClassPointerOffset);
 		getMainInstancePtrFunctionAddress = (uintptr_t)mem::ScanModIn((char*)getMainInstancePtrPattern, (char*)getMainInstancePtrMask, "rbclient.exe");
@@ -84,18 +84,22 @@ Entity* game::getPlayerEntity() {
 }
 
 void game::initializeCpythonPlayerSingleton() {
+	uintptr_t cPythonPlayerSingletonPointerFunctionAddress;
+
 	cPythonPlayerSingletonPointerFunctionAddress = (uintptr_t)mem::ScanModIn((char*)cPythonPlayerSingletonPointerFunctionPattern, (char*)cPythonPlayerSingletonPointerFunctionMask, "rbclient.exe");
 	cPythonPlayerSingletonPointer = *(uintptr_t*)(cPythonPlayerSingletonPointerFunctionAddress + cPythonPlayerSingletonPointerOffsetToClassPointer);
 	cPythonPlayerSingletonInitialized = true;
 }
 
 void game::initializeAttackEntityFunctionAddresses() {
+	uintptr_t attackEntityAddress;
+
 	attackEntityAddress = (uintptr_t)mem::ScanModIn((char*)attackEntityPattern, (char*)attackEntityMask, "rbclient.exe");
 	attackEntityFunc = (__attackEntityFunc)(attackEntityAddress);
 	attackEntityAddressInitialized = true;
 }
 
-void game::attackVID(DWORD VID) {
+void game::playerAttackVID(DWORD VID) {
 
 	if (!attackEntityAddressInitialized) {
 		game::initializeAttackEntityFunctionAddresses();
@@ -107,7 +111,7 @@ void game::attackVID(DWORD VID) {
 	attackEntityFunc(*(void**)cPythonPlayerSingletonPointer, VID);
 }
 
-void game::attackEntity(Entity* entity) {
+void game::playerAttackEntity(Entity* entity) {
 
 	if (!attackEntityAddressInitialized) {
 		game::initializeAttackEntityFunctionAddresses();
@@ -123,13 +127,14 @@ void game::attackEntity(Entity* entity) {
 }
 
 void game::initializePickupFunctionAddresses() {
+	uintptr_t pickupFunctionAddress;
+
 	pickupFunctionAddress = (uintptr_t)mem::ScanModIn((char*)pickupFunctionPattern, (char*)pickupFunctionMask, "rbclient.exe");
 	pickupCloseFunc = (__pickupCloseFunc)(pickupFunctionAddress);
 	pickupFunctionAddressesInitialized = true;
 }
 
-
-void game::pickupItems() {
+void game::playerPickupItems() {
 
 	if (!pickupFunctionAddressesInitialized) {
 		game::initializePickupFunctionAddresses();
@@ -139,7 +144,6 @@ void game::pickupItems() {
 	}
 	pickupCloseFunc(*(void**)cPythonPlayerSingletonPointer);
 }
-
 
 bool game::areOtherPlayersPresent() {
 	int playerCount = 0;
@@ -204,14 +208,22 @@ float game::getDistanceBetweenEntities(Entity* firstEntity, Entity* secondEntity
 	return sqrt(pow(firstEntity->getPosition().x - secondEntity->getPosition().x, 2) + pow(firstEntity->getPosition().y - secondEntity->getPosition().y, 2));
 }
 
-void game::enableWallhack() {
+void game::playerEnableWallhack() {
 	game::getPlayerEntity()->enableSkipCollision();
 }
 
-void game::disableWallhack() {
+void game::playerDisableWallhack() {
 	game::getPlayerEntity()->disableSkipCollision();
 }
 
-void game::resetPlayerAtatck() {
-	game::attackVID(0);
+bool game::playerHasWallhackEnabled() {
+	return game::getPlayerEntity()->getSkipCollision() == 1;
+}
+
+Vector3 game::getPlayerPosition() {
+	return game::getPlayerEntity()->getPosition();
+}
+
+bool game::isPlayerAttacking() {
+	return game::getPlayerEntity()->getAttackStance() != 0;
 }

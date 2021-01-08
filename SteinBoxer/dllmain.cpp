@@ -68,11 +68,11 @@ DWORD WINAPI MainThread(LPVOID param) {
 				if (firstLoop) {
 					cout << "[i] FirstLoop setup is run..." << endl;
 					// enable wallhack
-					game::enableWallhack();
+					game::playerEnableWallhack();
 					wallhack = true;
 					cout << "[i] WH enabled" << endl;
 					// get Anchor position
-					anchorPosition = game::getPlayerEntity()->getPosition();
+					anchorPosition = game::getPlayerPosition();
 					cout << "[i] Anchor position set to " << anchorPosition.x << " / " << anchorPosition.y << endl;
 
 					firstLoop = false;
@@ -86,7 +86,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 						// will only be 1 for a short time until object is removed and replaced
 						if (attackedStone->getMobDiedRecently() == 1) {
 							Sleep(1000);
-							game::pickupItems();
+							game::playerPickupItems();
 							cout << "[i] Stone died - Picked up loot" << endl;
 							// dead entities are not instantly remove from the enity list so we need to wait
 							// some time for the game to update, so we don't spam attack the same (dead) entity
@@ -106,8 +106,8 @@ DWORD WINAPI MainThread(LPVOID param) {
 								attackedStone = 0;
 							}
 
-							if (game::getPlayerEntity()->getAttackStance() == 0) {
-								game::attackEntity(attackedStone);
+							if (!game::isPlayerAttacking()) {
+								game::playerAttackEntity(attackedStone);
 								//cout << "[i] Attacking again because we got reset..." << endl;
 							}
 						}
@@ -122,7 +122,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 							attackedStone = closestStoneToPlayer;
 							// if very close to stone attack that one instead of closest to anchor
 							//game::playerAttackMobWithUid(closestStoneToPlayer);
-							game::attackEntity(closestStoneToPlayer);
+							game::playerAttackEntity(closestStoneToPlayer);
 							cout << "[i] Player is close to a stone, prefering that one over the one closest to anchor." << endl;
 							// start timer for blacklist
 							startTime = chrono::steady_clock::now();
@@ -131,7 +131,7 @@ DWORD WINAPI MainThread(LPVOID param) {
 							attackedStone = closestStoneToAnchor;
 							// attack closest to anchor
 							//game::playerAttackMobWithUid(closestStoneToAnchor);
-							game::attackEntity(closestStoneToAnchor);
+							game::playerAttackEntity(closestStoneToAnchor);
 							// start timer for blacklist
 							startTime = chrono::steady_clock::now();
 						}
@@ -155,7 +155,7 @@ DWORD WINAPI PickupSpamThread(LPVOID param) {
 	while (!shutdown) {
 		if (pickupSpam) {
 			if (!(freezeWhenPlayersPresent && game::areOtherPlayersPresent())) {
-				game::pickupItems();
+				game::playerPickupItems();
 			}
 		}
 		Sleep(100);
@@ -168,8 +168,8 @@ DWORD WINAPI WallhackTestThread(LPVOID param) {
 
 	while (!shutdown) {
 		if (wallhack) {
-			if (game::getPlayerEntity()->getSkipCollision() == 0) {
-				game::getPlayerEntity()->enableSkipCollision();
+			if (!game::playerHasWallhackEnabled()) {
+				game::playerEnableWallhack();
 			}
 		}
 		Sleep(100);
@@ -189,7 +189,7 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 			else {
 				cout << "[->] BOT OFF" << endl;
 				attackedStone = 0;
-				game::disableWallhack();
+				game::playerDisableWallhack();
 				wallhack = false;
 				cout << "[i] WH disabled" << endl;
 				firstLoop = true;
@@ -223,18 +223,18 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 			wallhack = !wallhack;
 			if (wallhack) {
 				cout << "[->] WALLHACK ON" << endl;
-				game::enableWallhack();
+				game::playerEnableWallhack();
 			}
 			else {
 				cout << "[->] WALLHACK OFF" << endl;
-				game::disableWallhack();
+				game::playerDisableWallhack();
 			}
 			Sleep(200);
 		}
 
 		if (GetAsyncKeyState(VK_F12) & 1) {
 			cout << "[->] SELLING FIRST STONE PAGE, PLEASE WAIT" << endl;
-			game::sellFirstStonePage();
+			game::playerSellFirstStonePage();
 			Sleep(200);
 		}
 
@@ -251,7 +251,7 @@ DWORD WINAPI ControlsThread(LPVOID param) {
 	// unhooking so we don't crash the game
 	mem::restoreBytes((void*)recvWhisperPacketFunctionAddress, originalBytesRecvWhisperPacketFunction);
 	// disable wallhack
-	game::disableWallhack();
+	game::playerDisableWallhack();
 	cout << "[i] WH disabled" << endl;
 
 	cout << "[i] GOODBYE, BOT TERMINATING NOW" << endl;
