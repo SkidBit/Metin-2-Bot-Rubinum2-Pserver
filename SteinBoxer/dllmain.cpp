@@ -98,8 +98,8 @@ DWORD WINAPI MainThread(LPVOID param) {
 							currentTime = chrono::steady_clock::now();
 							elapsedTime = chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
 
-							// have been attacking the same stone for 2 minutes -> we are stuck
-							if (elapsedTime > 60) {
+							// takes us more than 20 sec to reach a stone, stuck or circling..
+							if (elapsedTime > 20 && !game::isPlayerAttacking()) {
 								// add uid to blacklist and reset the stone pointer
 								blacklistedUids.push_back(attackedStone->getUid());
 								cout << "[i] Added stone with UID: " << dec << attackedStone->getUid() << " to blacklist." << endl;
@@ -116,22 +116,23 @@ DWORD WINAPI MainThread(LPVOID param) {
 						closestStoneToAnchor = game::getClosestMetinStone(anchorPosition);
 						closestStoneToPlayer = game::getClosestMetinStone(game::getPlayerEntity()->getPosition());
 
-						cout << "CLOSEST TO PLAYER " << hex << closestStoneToPlayer << endl;
+						// check if there is even a stone around
+						if (closestStoneToAnchor != nullptr && closestStoneToPlayer != nullptr) {
+							cout << "CLOSEST TO PLAYER " << hex << closestStoneToPlayer << endl;
 
-						if (game::getDistanceBetweenEntities(game::getPlayerEntity(), closestStoneToPlayer) < distanceToPreferClosestStone) {
-							attackedStone = closestStoneToPlayer;
-							// if very close to stone attack that one instead of closest to anchor
-							//game::playerAttackMobWithUid(closestStoneToPlayer);
-							game::playerAttackEntity(closestStoneToPlayer);
-							cout << "[i] Player is close to a stone, prefering that one over the one closest to anchor." << endl;
-							// start timer for blacklist
-							startTime = chrono::steady_clock::now();
-						}
-						else {
-							attackedStone = closestStoneToAnchor;
-							// attack closest to anchor
-							//game::playerAttackMobWithUid(closestStoneToAnchor);
-							game::playerAttackEntity(closestStoneToAnchor);
+							if (game::getDistanceBetweenEntities(game::getPlayerEntity(), closestStoneToPlayer) < distanceToPreferClosestStone) {
+								attackedStone = closestStoneToPlayer;
+								// if very close to stone attack that one instead of closest to anchor
+								//game::playerAttackMobWithUid(closestStoneToPlayer);
+								game::playerAttackEntity(closestStoneToPlayer);
+								cout << "[i] Player is close to a stone, prefering that one over the one closest to anchor." << endl;
+							}
+							else {
+								attackedStone = closestStoneToAnchor;
+								// attack closest to anchor
+								//game::playerAttackMobWithUid(closestStoneToAnchor);
+								game::playerAttackEntity(closestStoneToAnchor);
+							}
 							// start timer for blacklist
 							startTime = chrono::steady_clock::now();
 						}
